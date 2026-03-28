@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>نظام مطعم عراقي | كاشير + مطبخ متكامل</title>
+    <title>نظام مطعم عراقي | كاشير + مطبخ</title>
     
     <!-- Ably SDK -->
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
@@ -22,7 +22,6 @@
             padding: 12px;
         }
 
-        /* Mode Selection */
         .mode-selection {
             position: fixed;
             top: 0;
@@ -34,7 +33,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(10px);
         }
 
         .mode-card {
@@ -45,12 +43,6 @@
             border: 2px solid #ff6b9d;
             max-width: 320px;
             width: 90%;
-            animation: fadeInUp 0.5s;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .mode-card h2 {
@@ -84,10 +76,6 @@
             gap: 10px;
         }
 
-        .mode-btn:active {
-            transform: scale(0.97);
-        }
-
         .mode-cashier {
             background: linear-gradient(135deg, #ff2d6d, #ff6b9d);
             color: white;
@@ -99,7 +87,6 @@
             border: 2px solid #ff6b9d;
         }
 
-        /* App Container */
         .app-container {
             max-width: 550px;
             margin: 0 auto;
@@ -126,12 +113,6 @@
             50% { transform: rotate(-15deg); }
             75% { transform: rotate(5deg); }
             100% { transform: rotate(0deg); }
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(255, 107, 157, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(255, 107, 157, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 107, 157, 0); }
         }
 
         .header {
@@ -178,10 +159,8 @@
             height: 10px;
             border-radius: 50%;
             background: #e74c3c;
-            box-shadow: 0 0 5px #e74c3c;
         }
 
-        /* Products Grid */
         .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -226,7 +205,6 @@
             font-size: 0.7rem;
         }
 
-        /* Table Number Selector */
         .table-selector {
             background: linear-gradient(145deg, #1a101a, #120b12);
             margin: 15px;
@@ -256,7 +234,6 @@
             border-radius: 20px;
             cursor: pointer;
             font-size: 0.9rem;
-            transition: all 0.2s;
         }
 
         .table-btn.active {
@@ -265,7 +242,6 @@
             border: none;
         }
 
-        /* Cart Section */
         .cart-section {
             padding: 15px;
             background: #0f080f;
@@ -294,18 +270,30 @@
             cursor: pointer;
         }
 
-        /* Kitchen Orders */
-        .kitchen-orders, .ready-section {
-            padding: 15px;
+        .btn-ready, .btn-complete, .btn-clear {
+            border: none;
+            padding: 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 8px;
         }
 
-        .section-title {
+        .btn-ready {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+        }
+
+        .btn-complete {
+            background: linear-gradient(135deg, #ff2d6d, #ff6b9d);
+            color: white;
+        }
+
+        .btn-clear {
+            background: #4a1f3a;
             color: #ff6b9d;
-            margin-bottom: 15px;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            border: 1px solid #ff6b9d;
         }
 
         .order-card {
@@ -314,12 +302,10 @@
             padding: 15px;
             margin-bottom: 15px;
             border: 1px solid rgba(255, 107, 157, 0.3);
-            transition: all 0.2s;
         }
 
         .new-order-card {
             border-right: 4px solid #ff2d6d;
-            animation: pulse 1s infinite;
         }
 
         .ready-order-card {
@@ -369,33 +355,6 @@
             color: #ff6b9d;
         }
 
-        .btn-ready, .btn-complete {
-            border: none;
-            padding: 10px;
-            border-radius: 20px;
-            cursor: pointer;
-            margin-top: 10px;
-            width: 100%;
-            font-weight: bold;
-        }
-
-        .btn-ready {
-            background: linear-gradient(135deg, #27ae60, #2ecc71);
-            color: white;
-        }
-
-        .btn-complete {
-            background: linear-gradient(135deg, #ff2d6d, #ff6b9d);
-            color: white;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #8b6b8b;
-        }
-
-        /* Cashier Ready Orders */
         .cashier-ready-orders {
             background: #0f080f;
             margin: 15px;
@@ -411,10 +370,14 @@
             padding: 12px;
             margin-bottom: 10px;
             border: 1px solid #2ecc71;
-            animation: fadeIn 0.3s;
         }
 
-        /* Toast */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #8b6b8b;
+        }
+
         .toast {
             position: fixed;
             bottom: 20px;
@@ -426,8 +389,6 @@
             color: white;
             transition: transform 0.3s;
             z-index: 1000;
-            white-space: nowrap;
-            max-width: 90%;
             text-align: center;
             font-weight: bold;
         }
@@ -436,7 +397,6 @@
             transform: translateX(-50%) translateY(0);
         }
 
-        /* Floating Bell */
         .floating-bell {
             position: fixed;
             bottom: 20px;
@@ -449,9 +409,21 @@
             align-items: center;
             justify-content: center;
             font-size: 1.5rem;
-            box-shadow: 0 5px 15px rgba(255, 45, 109, 0.5);
             animation: bellRing 0.5s;
             z-index: 100;
+        }
+
+        .kitchen-orders, .ready-section {
+            padding: 15px;
+        }
+
+        .section-title {
+            color: #ff6b9d;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
     </style>
 </head>
@@ -481,7 +453,6 @@
             <div class="connection-status" id="cashierStatus"></div>
         </div>
 
-        <!-- Table Number Selector -->
         <div class="table-selector">
             <label>📌 رقم الطاولة:</label>
             <div class="table-buttons" id="tableButtons"></div>
@@ -505,16 +476,15 @@
                     <span>الإجمالي:</span>
                     <span id="cashierTotal">0 د.ع</span>
                 </div>
-                <button class="btn-ready" onclick="sendOrderToKitchen()" style="background: linear-gradient(135deg, #ff2d6d, #ff6b9d); margin-top: 10px;">
+                <button class="btn-ready" onclick="sendOrderToKitchen()" style="background: linear-gradient(135deg, #ff2d6d, #ff6b9d);">
                     📤 أرسل الطلب للمطبخ
                 </button>
-                <button onclick="clearCashierCart()" style="width: 100%; margin-top: 8px; background: #4a1f3a; color: #ff6b9d; border: none; padding: 10px; border-radius: 20px;">
+                <button class="btn-clear" onclick="clearCashierCart()">
                     🗑️ فريغ السلة
                 </button>
             </div>
         </div>
 
-        <!-- Ready Orders Section for Cashier -->
         <div class="cashier-ready-orders">
             <h3 style="color: #2ecc71; margin-bottom: 12px;">✅ طلبات جاهزة للتسليم</h3>
             <div id="cashierReadyOrders"></div>
@@ -548,23 +518,19 @@
     <div id="toast" class="toast"></div>
 
     <script>
-        // ============= إعدادات Ably =============
+        // ============= مفتاح Ably =============
         const ABLY_API_KEY = "Rb_5bw.uuY0Fg:xiw6RyPqBY6CAm7N69a60R4KNogO0QLPzuROjFPs0f4";
         
         let ably = null;
         let channel = null;
         let currentMode = null;
         
-        // بيانات الطلبات
-        let allOrders = []; // جميع الطلبات { id, orderNumber, tableNumber, items, subtotal, tax, total, status, time, date, timestamp }
+        let allOrders = [];
         let currentCart = [];
         let selectedTable = 1;
         let nextOrderNumber = 1;
-        
-        // الطلبات الجاهزة للكاشير
         let cashierReadyOrders = [];
         
-        // قائمة المنتجات العراقية
         let products = [
             { id: 1, name: "تمن ومرق", price: 3500, emoji: "🍛" },
             { id: 2, name: "مسكوف", price: 12000, emoji: "🐟" },
@@ -575,85 +541,68 @@
             { id: 7, name: "باقلاء", price: 3000, emoji: "🥣" },
             { id: 8, name: "چاي", price: 500, emoji: "🍵" },
             { id: 9, name: "سمبوسة", price: 1000, emoji: "🥟" },
-            { id: 10, name: "كباب", price: 8000, emoji: "🍢" },
-            { id: 11, name: "دجاج مشوي", price: 10000, emoji: "🍗" },
-            { id: 12, name: "عصير طبيعي", price: 1500, emoji: "🥤" }
+            { id: 10, name: "كباب", price: 8000, emoji: "🍢" }
         ];
         
         const TAX_RATE = 0.15;
         
-        // ============= حفظ واسترجاع البيانات =============
-        
-        function saveAllData() {
+        // ============= حفظ البيانات =============
+        function saveData() {
             localStorage.setItem('iraqi_all_orders', JSON.stringify(allOrders));
-            localStorage.setItem('iraqi_next_order_number', nextOrderNumber);
-            localStorage.setItem('iraqi_products', JSON.stringify(products));
+            localStorage.setItem('iraqi_next_order', nextOrderNumber);
         }
         
-        function loadAllData() {
-            const savedOrders = localStorage.getItem('iraqi_all_orders');
-            if(savedOrders) {
-                allOrders = JSON.parse(savedOrders);
-            }
-            
-            const savedNextNumber = localStorage.getItem('iraqi_next_order_number');
-            if(savedNextNumber) {
-                nextOrderNumber = parseInt(savedNextNumber);
-            }
-            
-            const savedProducts = localStorage.getItem('iraqi_products');
-            if(savedProducts) {
-                products = JSON.parse(savedProducts);
-            }
+        function loadData() {
+            let saved = localStorage.getItem('iraqi_all_orders');
+            if(saved) allOrders = JSON.parse(saved);
+            saved = localStorage.getItem('iraqi_next_order');
+            if(saved) nextOrderNumber = parseInt(saved);
         }
         
-        // ============= Functions =============
-        
+        // ============= الأصوات =============
         function playNewOrderSound() {
             try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                for(let i = 0; i < 3; i++) {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                for(let i=0; i<3; i++) {
                     setTimeout(() => {
-                        const osc = audioCtx.createOscillator();
-                        const gain = audioCtx.createGain();
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
                         osc.connect(gain);
-                        gain.connect(audioCtx.destination);
-                        osc.frequency.value = 880 - (i * 100);
+                        gain.connect(ctx.destination);
+                        osc.frequency.value = 880 - (i*100);
                         gain.gain.value = 0.3;
                         osc.start();
-                        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.2);
-                        osc.stop(audioCtx.currentTime + 0.2);
-                    }, i * 150);
+                        gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.2);
+                        osc.stop(ctx.currentTime + 0.2);
+                    }, i*150);
                 }
             } catch(e) {}
         }
         
         function playBellSound() {
             try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
                 osc.connect(gain);
-                gain.connect(audioCtx.destination);
+                gain.connect(ctx.destination);
                 osc.frequency.value = 1046.50;
                 gain.gain.value = 0.4;
                 osc.start();
-                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5);
-                osc.stop(audioCtx.currentTime + 0.5);
-                
+                gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.5);
+                osc.stop(ctx.currentTime + 0.5);
                 setTimeout(() => {
-                    const osc2 = audioCtx.createOscillator();
-                    const gain2 = audioCtx.createGain();
+                    const osc2 = ctx.createOscillator();
+                    const gain2 = ctx.createGain();
                     osc2.connect(gain2);
-                    gain2.connect(audioCtx.destination);
+                    gain2.connect(ctx.destination);
                     osc2.frequency.value = 1318.51;
                     gain2.gain.value = 0.4;
                     osc2.start();
-                    gain2.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
-                    osc2.stop(audioCtx.currentTime + 0.3);
+                    gain2.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.3);
+                    osc2.stop(ctx.currentTime + 0.3);
                 }, 200);
-                
-                const bell = document.createElement('div');
+                let bell = document.createElement('div');
                 bell.className = 'floating-bell';
                 bell.innerHTML = '🔔';
                 document.body.appendChild(bell);
@@ -661,136 +610,102 @@
             } catch(e) {}
         }
         
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
+        function showToast(msg) {
+            let toast = document.getElementById('toast');
+            toast.textContent = msg;
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 2500);
         }
         
-        // ============= Ably Connection =============
-        
+        // ============= Ably =============
         function initAbly() {
             try {
                 ably = new Ably.Realtime({ key: ABLY_API_KEY });
                 channel = ably.channels.get("restaurant-orders");
-                
                 ably.connection.on("connected", () => {
-                    console.log("✅ متصل بـ Ably");
-                    updateConnectionStatus(true);
+                    document.querySelectorAll('.connection-status').forEach(el => {
+                        el.style.background = '#2ecc71';
+                    });
                 });
-                
                 ably.connection.on("failed", () => {
-                    console.log("❌ فشل الاتصال");
-                    updateConnectionStatus(false);
+                    document.querySelectorAll('.connection-status').forEach(el => {
+                        el.style.background = '#e74c3c';
+                    });
                 });
                 
-                // استلام الطلبات الجديدة
-                channel.subscribe("new-order", (message) => {
-                    console.log("📦 طلب جديد:", message.data);
-                    const newOrder = message.data;
-                    
+                channel.subscribe("new-order", (msg) => {
+                    let order = msg.data;
                     if(currentMode === 'kitchen') {
-                        allOrders.unshift(newOrder);
-                        saveAllData();
-                        refreshKitchenView();
+                        allOrders.unshift(order);
+                        saveData();
+                        refreshKitchen();
                         playNewOrderSound();
-                        showToast(`🔔 طلب جديد #${newOrder.orderNumber} - طاولة ${newOrder.tableNumber}`);
+                        showToast(`🔔 طلب جديد #${order.orderNumber} - طاولة ${order.tableNumber}`);
                     }
                 });
                 
-                // استلام الطلبات الجاهزة
-                channel.subscribe("order-ready", (message) => {
-                    console.log("✅ طلب جاهز:", message.data);
-                    const readyOrderData = message.data;
-                    
-                    // البحث عن الطلب في allOrders وتحديث حالته
-                    const orderIndex = allOrders.findIndex(o => o.id === readyOrderData.id);
-                    if(orderIndex !== -1) {
-                        allOrders[orderIndex].status = 'ready';
-                        saveAllData();
+                channel.subscribe("order-ready", (msg) => {
+                    let data = msg.data;
+                    let idx = allOrders.findIndex(o => o.id === data.id);
+                    if(idx !== -1) {
+                        allOrders[idx].status = 'ready';
+                        saveData();
                     }
-                    
                     if(currentMode === 'kitchen') {
-                        refreshKitchenView();
-                        showToast(`✅ الطلب #${readyOrderData.orderNumber} جاهز!`);
+                        refreshKitchen();
+                        showToast(`✅ الطلب #${data.orderNumber} جاهز!`);
                     }
-                    
                     if(currentMode === 'cashier') {
-                        // إضافة الطلب الجاهز لقائمة الكاشير
-                        const readyOrder = {
-                            id: readyOrderData.id,
-                            orderNumber: readyOrderData.orderNumber,
-                            tableNumber: readyOrderData.tableNumber,
-                            items: readyOrderData.items,
-                            total: readyOrderData.total,
-                            time: readyOrderData.time
+                        let readyOrder = {
+                            id: data.id,
+                            orderNumber: data.orderNumber,
+                            tableNumber: data.tableNumber,
+                            items: data.items,
+                            total: data.total,
+                            time: data.time
                         };
                         cashierReadyOrders.unshift(readyOrder);
-                        updateCashierReadyOrders();
+                        updateCashierReady();
                         playBellSound();
-                        showToast(`🔔🔔 طلب #${readyOrderData.orderNumber} - طاولة ${readyOrderData.tableNumber} جاهز! 🔔🔔`);
+                        showToast(`🔔🔔 طلب #${data.orderNumber} - طاولة ${data.tableNumber} جاهز!`);
                     }
                 });
                 
-                // استلام إشعار اكتمال الطلب
-                channel.subscribe("order-completed", (message) => {
-                    console.log("🎉 طلب مكتمل:", message.data);
-                    const completedOrder = message.data;
-                    
+                channel.subscribe("order-completed", (msg) => {
+                    let data = msg.data;
                     if(currentMode === 'kitchen') {
-                        allOrders = allOrders.filter(o => o.id !== completedOrder.id);
-                        saveAllData();
-                        refreshKitchenView();
+                        allOrders = allOrders.filter(o => o.id !== data.id);
+                        saveData();
+                        refreshKitchen();
                     }
-                    
                     if(currentMode === 'cashier') {
-                        // حذف الطلب من قائمة الطلبات الجاهزة
-                        cashierReadyOrders = cashierReadyOrders.filter(o => o.id !== completedOrder.id);
-                        updateCashierReadyOrders();
-                        showToast(`✅ تم تسليم الطلب #${completedOrder.orderNumber}`);
+                        cashierReadyOrders = cashierReadyOrders.filter(o => o.id !== data.id);
+                        updateCashierReady();
+                        showToast(`✅ تم تسليم الطلب #${data.orderNumber}`);
                     }
                 });
-                
-                return true;
-            } catch(e) {
-                console.error("خطأ في Ably:", e);
-                return false;
-            }
+            } catch(e) { console.log(e); }
         }
         
-        function updateConnectionStatus(connected) {
-            const statusElements = document.querySelectorAll('.connection-status');
-            statusElements.forEach(el => {
-                el.style.background = connected ? '#2ecc71' : '#e74c3c';
-                el.style.boxShadow = connected ? '0 0 5px #2ecc71' : '0 0 5px #e74c3c';
-            });
-        }
-        
-        // ============= Table Buttons =============
-        
+        // ============= الكاشير =============
         function createTableButtons() {
-            const container = document.getElementById('tableButtons');
+            let container = document.getElementById('tableButtons');
             if(!container) return;
-            
-            const tables = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-            container.innerHTML = tables.map(num => `
-                <button class="table-btn ${selectedTable === num ? 'active' : ''}" onclick="selectTable(${num})">
-                    طاولة ${num}
-                </button>
-            `).join('');
+            let html = '';
+            for(let i=1; i<=10; i++) {
+                html += `<button class="table-btn ${selectedTable === i ? 'active' : ''}" onclick="selectTable(${i})">طاولة ${i}</button>`;
+            }
+            container.innerHTML = html;
         }
         
-        function selectTable(tableNum) {
-            selectedTable = tableNum;
+        function selectTable(num) {
+            selectedTable = num;
             createTableButtons();
             document.getElementById('selectedTableLabel').innerText = selectedTable;
         }
         
-        // ============= Cashier Functions =============
-        
         function displayProducts() {
-            const grid = document.getElementById('productsGrid');
+            let grid = document.getElementById('productsGrid');
             if(!grid) return;
             grid.innerHTML = products.map(p => `
                 <div class="product-card" onclick="addToCart(${p.id})">
@@ -801,63 +716,54 @@
             `).join('');
         }
         
-        function addToCart(productId) {
-            const product = products.find(p => p.id === productId);
+        function addToCart(id) {
+            let product = products.find(p => p.id === id);
             if(!product) return;
-            
-            const existing = currentCart.find(i => i.id === productId);
-            if(existing) {
-                existing.quantity++;
-            } else {
-                currentCart.push({...product, quantity: 1});
-            }
-            updateCashierCart();
+            let existing = currentCart.find(i => i.id === id);
+            if(existing) existing.quantity++;
+            else currentCart.push({...product, quantity: 1});
+            updateCart();
         }
         
-        function updateCashierCart() {
-            const container = document.getElementById('cashierCart');
+        function updateCart() {
+            let container = document.getElementById('cashierCart');
             if(!container) return;
-            
             if(currentCart.length === 0) {
-                container.innerHTML = '<div style="color: #8b6b8b; text-align: center;">السلة فاضية</div>';
-                updateCashierSummary();
+                container.innerHTML = '<div class="empty-state">السلة فاضية</div>';
+                updateSummary();
                 return;
             }
-            
             container.innerHTML = currentCart.map((item, idx) => `
                 <div class="cart-item">
-                    <div style="font-size: 1.2rem;">${item.emoji}</div>
-                    <div style="flex: 1;">
-                        <div style="color: #ffd4e5;">${item.name}</div>
-                        <div style="color: #ff6b9d; font-size: 0.7rem;">${item.price} د.ع</div>
+                    <div style="font-size:1.2rem">${item.emoji}</div>
+                    <div style="flex:1">
+                        <div style="color:#ffd4e5">${item.name}</div>
+                        <div style="color:#ff6b9d;font-size:0.7rem">${item.price} د.ع</div>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="display:flex;gap:8px">
                         <button class="qty-btn" onclick="updateQty(${idx}, -1)">-</button>
-                        <span style="color: white;">${item.quantity}</span>
+                        <span style="color:white">${item.quantity}</span>
                         <button class="qty-btn" onclick="updateQty(${idx}, 1)">+</button>
                     </div>
                 </div>
             `).join('');
-            updateCashierSummary();
+            updateSummary();
         }
         
-        function updateQty(index, change) {
-            if(index >= 0 && index < currentCart.length) {
-                const newQty = currentCart[index].quantity + change;
-                if(newQty <= 0) {
-                    currentCart.splice(index, 1);
-                } else {
-                    currentCart[index].quantity = newQty;
-                }
-                updateCashierCart();
+        function updateQty(idx, change) {
+            if(idx>=0 && idx<currentCart.length) {
+                let newQty = currentCart[idx].quantity + change;
+                if(newQty <= 0) currentCart.splice(idx,1);
+                else currentCart[idx].quantity = newQty;
+                updateCart();
             }
         }
         
-        function updateCashierSummary() {
-            const subtotal = currentCart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
-            const tax = subtotal * TAX_RATE;
-            const total = subtotal + tax;
-            document.getElementById('cashierSubtotal').innerHTML = `${subtotal.toFixed(0)} د.ع`;
+        function updateSummary() {
+            let sub = currentCart.reduce((s,i) => s + (i.price * i.quantity), 0);
+            let tax = sub * TAX_RATE;
+            let total = sub + tax;
+            document.getElementById('cashierSubtotal').innerHTML = `${sub.toFixed(0)} د.ع`;
             document.getElementById('cashierTax').innerHTML = `${tax.toFixed(0)} د.ع`;
             document.getElementById('cashierTotal').innerHTML = `${total.toFixed(0)} د.ع`;
         }
@@ -865,65 +771,50 @@
         function clearCashierCart() {
             if(currentCart.length > 0 && confirm('تريد تفريغ السلة؟')) {
                 currentCart = [];
-                updateCashierCart();
+                updateCart();
                 showToast('🗑️ السلة فريغت');
             }
         }
         
         function sendOrderToKitchen() {
             if(currentCart.length === 0) {
-                showToast('⚠️ السلة فاضية! أضف أكلات');
+                showToast('⚠️ السلة فاضية');
                 return;
             }
-            
             if(!channel) {
-                showToast('❌ مشكلة في الاتصال، حاول مرة أخرى');
+                showToast('❌ مشكلة بالاتصال');
                 return;
             }
-            
-            const subtotal = currentCart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
-            const tax = subtotal * TAX_RATE;
-            const total = subtotal + tax;
-            
-            const newOrder = {
+            let sub = currentCart.reduce((s,i) => s + (i.price * i.quantity), 0);
+            let tax = sub * TAX_RATE;
+            let total = sub + tax;
+            let newOrder = {
                 id: Date.now(),
                 orderNumber: nextOrderNumber++,
                 tableNumber: selectedTable,
                 items: currentCart.map(i => ({...i})),
-                subtotal: subtotal,
+                subtotal: sub,
                 tax: tax,
                 total: total,
                 status: 'new',
                 time: new Date().toLocaleTimeString('ar-IQ'),
-                date: new Date().toLocaleDateString('ar-IQ'),
-                timestamp: Date.now()
+                date: new Date().toLocaleDateString('ar-IQ')
             };
-            
             allOrders.push(newOrder);
-            saveAllData();
-            
-            channel.publish("new-order", newOrder, (err) => {
-                if(err) {
-                    console.error("خطأ:", err);
-                    showToast("❌ فشل إرسال الطلب");
-                } else {
-                    showToast(`✅ تم إرسال الطلب #${newOrder.orderNumber} - طاولة ${selectedTable} للمطبخ!`);
-                }
-            });
-            
+            saveData();
+            channel.publish("new-order", newOrder);
+            showToast(`✅ تم إرسال الطلب #${newOrder.orderNumber} - طاولة ${selectedTable}`);
             currentCart = [];
-            updateCashierCart();
+            updateCart();
         }
         
-        function updateCashierReadyOrders() {
-            const container = document.getElementById('cashierReadyOrders');
+        function updateCashierReady() {
+            let container = document.getElementById('cashierReadyOrders');
             if(!container) return;
-            
             if(cashierReadyOrders.length === 0) {
-                container.innerHTML = '<div style="color: #8b6b8b; text-align: center;">📭 ماكو طلبات جاهزة</div>';
+                container.innerHTML = '<div class="empty-state">📭 ماكو طلبات جاهزة</div>';
                 return;
             }
-            
             container.innerHTML = cashierReadyOrders.map(order => `
                 <div class="ready-order-card-cashier">
                     <div class="order-header">
@@ -939,20 +830,132 @@
                             </div>
                         `).join('')}
                     </div>
-                    <div class="order-total">
-                        الإجمالي: ${order.total.toFixed(0)} د.ع
-                    </div>
-                    <button class="btn-complete" onclick="completeOrderFromCashier(${order.id}, ${order.orderNumber})" style="margin-top: 10px;">
-                        🛎️ تم تسليم الطلب للزبون
-                    </button>
+                    <div class="order-total">الإجمالي: ${order.total.toFixed(0)} د.ع</div>
+                    <button class="btn-complete" onclick="completeOrder(${order.id}, ${order.orderNumber})">🛎️ تم التسليم</button>
                 </div>
             `).join('');
         }
         
-        function completeOrderFromCashier(orderId, orderNumber) {
+        function completeOrder(orderId, orderNumber) {
             if(confirm(`تأكيد تسليم الطلب #${orderNumber}؟`)) {
                 cashierReadyOrders = cashierReadyOrders.filter(o => o.id !== orderId);
-                updateCashierReadyOrders();
-                
+                updateCashierReady();
+                if(channel) channel.publish("order-completed", { id: orderId, orderNumber: orderNumber });
+                showToast(`✅ تم تسليم الطلب #${orderNumber}`);
+            }
+        }
+        
+        // ============= المطبخ =============
+        function refreshKitchen() {
+            let newDiv = document.getElementById('newOrders');
+            let readyDiv = document.getElementById('readyOrders');
+            if(!newDiv) return;
+            let newOrders = allOrders.filter(o => o.status === 'new');
+            let readyOrders = allOrders.filter(o => o.status === 'ready');
+            
+            if(newOrders.length === 0) newDiv.innerHTML = '<div class="empty-state">📭 ماكو طلبات جديدة</div>';
+            else {
+                newDiv.innerHTML = newOrders.map(order => `
+                    <div class="order-card new-order-card">
+                        <div class="order-header">
+                            <span class="order-number">طلب #${order.orderNumber}</span>
+                            <span class="table-number">طاولة ${order.tableNumber}</span>
+                            <span class="order-time">${order.time}</span>
+                        </div>
+                        <div class="order-items">
+                            ${order.items.map(item => `
+                                <div class="order-item">
+                                    <span>${item.emoji} ${item.name}</span>
+                                    <span>${item.quantity} × ${item.price.toFixed(0)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="order-total">الإجمالي: ${order.total.toFixed(0)} د.ع</div>
+                        <button class="btn-ready" onclick="markReady(${order.id})">✅ جهز الطلب</button>
+                    </div>
+                `).join('');
+            }
+            
+            if(readyOrders.length === 0) readyDiv.innerHTML = '<div class="empty-state">📦 ماكو طلبات جاهزة</div>';
+            else {
+                readyDiv.innerHTML = readyOrders.map(order => `
+                    <div class="order-card ready-order-card">
+                        <div class="order-header">
+                            <span class="order-number">طلب #${order.orderNumber}</span>
+                            <span class="table-number">طاولة ${order.tableNumber}</span>
+                            <span class="order-time">${order.time}</span>
+                        </div>
+                        <div class="order-items">
+                            ${order.items.map(item => `
+                                <div class="order-item">
+                                    <span>${item.emoji} ${item.name} x${item.quantity}</span>
+                                    <span>${(item.price * item.quantity).toFixed(0)} د.ع</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="order-total">الإجمالي: ${order.total.toFixed(0)} د.ع</div>
+                        <button class="btn-complete" onclick="completeFromKitchen(${order.id}, ${order.orderNumber}, ${order.tableNumber})">🛎️ سلم الطلب</button>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        function markReady(orderId) {
+            let order = allOrders.find(o => o.id === orderId);
+            if(order) {
+                order.status = 'ready';
+                saveData();
+                refreshKitchen();
+                showToast(`✅ الطلب #${order.orderNumber} جاهز!`);
                 if(channel) {
-                    channel.publish("order-completed", {
+                    channel.publish("order-ready", {
+                        id: order.id,
+                        orderNumber: order.orderNumber,
+                        tableNumber: order.tableNumber,
+                        items: order.items,
+                        total: order.total,
+                        time: order.time
+                    });
+                }
+            }
+        }
+        
+        function completeFromKitchen(orderId, orderNumber, tableNumber) {
+            if(confirm(`تأكيد تسليم الطلب #${orderNumber} لطاولة ${tableNumber}؟`)) {
+                allOrders = allOrders.filter(o => o.id !== orderId);
+                saveData();
+                refreshKitchen();
+                if(channel) channel.publish("order-completed", { id: orderId, orderNumber: orderNumber });
+                showToast(`✅ تم تسليم الطلب #${orderNumber}`);
+            }
+        }
+        
+        // ============= التحكم =============
+        function selectMode(mode) {
+            currentMode = mode;
+            document.getElementById('modeSelection').style.display = 'none';
+            if(mode === 'cashier') {
+                document.getElementById('cashierApp').classList.add('active');
+                createTableButtons();
+                displayProducts();
+                updateCart();
+                updateCashierReady();
+            } else {
+                document.getElementById('kitchenApp').classList.add('active');
+                refreshKitchen();
+            }
+        }
+        
+        function backToMode() {
+            document.getElementById('cashierApp').classList.remove('active');
+            document.getElementById('kitchenApp').classList.remove('active');
+            document.getElementById('modeSelection').style.display = 'flex';
+            currentMode = null;
+        }
+        
+        // ============= بدء التشغيل =============
+        loadData();
+        initAbly();
+    </script>
+</body>
+</html>
