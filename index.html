@@ -3,23 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>نظام مطعم عراقي | كاشير + مطبخ</title>
+    <title>نظام مطعم عراقي | كاشير + مطبخ - Ably</title>
+    
+    <!-- Ably SDK -->
+    <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+    
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', 'Tahoma', 'Cairo', 'Amiri', sans-serif;
+            font-family: 'Segoe UI', 'Tahoma', 'Cairo', sans-serif;
         }
 
         body {
             background: linear-gradient(135deg, #0a050a 0%, #1a0f1a 100%);
             min-height: 100vh;
-            padding: 15px;
-            position: relative;
+            padding: 12px;
         }
 
-        /* Mode Selection Screen */
+        /* Mode Selection */
         .mode-selection {
             position: fixed;
             top: 0;
@@ -32,7 +35,6 @@
             align-items: center;
             justify-content: center;
             backdrop-filter: blur(10px);
-            animation: fadeIn 0.5s;
         }
 
         .mode-card {
@@ -43,19 +45,29 @@
             border: 2px solid #ff6b9d;
             max-width: 320px;
             width: 90%;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            animation: fadeInUp 0.5s;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .mode-card h2 {
             color: #ff6b9d;
             margin-bottom: 10px;
-            font-size: 1.8rem;
+            font-size: 1.6rem;
         }
 
         .mode-card p {
             color: #b88cb8;
-            margin-bottom: 25px;
-            font-size: 0.9rem;
+            margin-bottom: 20px;
         }
 
         .mode-buttons {
@@ -68,7 +80,7 @@
             padding: 18px;
             border: none;
             border-radius: 25px;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
@@ -76,6 +88,10 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
+        }
+
+        .mode-btn:active {
+            transform: scale(0.97);
         }
 
         .mode-cashier {
@@ -89,41 +105,25 @@
             border: 2px solid #ff6b9d;
         }
 
-        .mode-btn:active {
-            transform: scale(0.97);
-        }
-
         /* App Container */
         .app-container {
             max-width: 550px;
             margin: 0 auto;
-            background: linear-gradient(145deg, #0a050a 0%, #1a0f1a 100%);
+            background: linear-gradient(145deg, #0a050a, #1a0f1a);
             border-radius: 35px;
             overflow: hidden;
-            box-shadow: 0 25px 45px rgba(0,0,0,0.5), 0 0 0 1px rgba(255, 107, 157, 0.2);
-            position: relative;
+            border: 1px solid rgba(255, 107, 157, 0.2);
             display: none;
         }
 
         .app-container.active {
             display: block;
-            animation: slideUp 0.4s;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            animation: fadeIn 0.3s;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes bellRing {
@@ -134,11 +134,12 @@
             100% { transform: rotate(0deg); }
         }
 
-        .bell-animation {
-            animation: bellRing 0.5s ease-in-out;
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 107, 157, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 107, 157, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 107, 157, 0); }
         }
 
-        /* Header */
         .header {
             background: linear-gradient(135deg, #ff6b9d, #ff2d6d);
             padding: 20px;
@@ -147,11 +148,17 @@
         }
 
         .header h1 {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+        }
+
+        .header p {
+            font-size: 0.7rem;
+            opacity: 0.9;
+            margin-top: 5px;
         }
 
         .back-btn {
@@ -162,113 +169,25 @@
             background: rgba(0,0,0,0.3);
             border: none;
             color: white;
-            padding: 8px 12px;
+            padding: 6px 12px;
             border-radius: 20px;
             cursor: pointer;
-            font-size: 0.8rem;
-        }
-
-        /* Kitchen Orders */
-        .kitchen-orders {
-            padding: 15px;
-        }
-
-        .order-card {
-            background: linear-gradient(145deg, #1a101a, #120b12);
-            border-radius: 25px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(255, 107, 157, 0.3);
-            position: relative;
-        }
-
-        .order-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 107, 157, 0.2);
-        }
-
-        .order-number {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #ff6b9d;
-        }
-
-        .order-time {
             font-size: 0.7rem;
-            color: #8b6b8b;
         }
 
-        .order-items {
-            margin: 12px 0;
+        .connection-status {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #e74c3c;
+            box-shadow: 0 0 5px #e74c3c;
         }
 
-        .order-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 0;
-            color: #ffd4e5;
-        }
-
-        .order-total {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid rgba(255, 107, 157, 0.2);
-            font-weight: bold;
-            color: #ff6b9d;
-        }
-
-        .kitchen-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 12px;
-        }
-
-        .btn-ready {
-            background: linear-gradient(135deg, #27ae60, #2ecc71);
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 20px;
-            cursor: pointer;
-            flex: 1;
-        }
-
-        .btn-cancel-order {
-            background: #4a1f3a;
-            color: #ff6b9d;
-            border: 1px solid #ff6b9d;
-            padding: 10px;
-            border-radius: 20px;
-            cursor: pointer;
-            flex: 0.5;
-        }
-
-        /* Ready Orders Section */
-        .ready-orders {
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 2px solid rgba(255, 107, 157, 0.3);
-        }
-
-        .ready-title {
-            color: #ff6b9d;
-            margin-bottom: 12px;
-            font-size: 1.1rem;
-        }
-
-        .ready-card {
-            background: linear-gradient(145deg, #1f2a1f, #152015);
-            border-radius: 20px;
-            padding: 12px;
-            margin-bottom: 10px;
-            border: 1px solid #2ecc71;
-        }
-
-        /* Cashier Products Grid */
+        /* Products Grid */
         .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -293,12 +212,32 @@
             background: #ff2d6d;
         }
 
-        /* Cart */
+        .product-emoji {
+            font-size: 1.8rem;
+        }
+
+        .product-name {
+            color: #ffd4e5;
+            font-size: 0.85rem;
+            margin: 5px 0;
+        }
+
+        .product-price {
+            color: #ff6b9d;
+            font-weight: bold;
+        }
+
+        .product-price::after {
+            content: " د.ع";
+            font-size: 0.7rem;
+        }
+
+        /* Cart Section */
         .cart-section {
             padding: 15px;
             background: #0f080f;
-            border-radius: 25px;
             margin: 15px;
+            border-radius: 25px;
         }
 
         .cart-item {
@@ -311,47 +250,118 @@
             gap: 10px;
         }
 
-        /* Notifications */
-        .notification-bell {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #ff2d6d;
-            color: white;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .qty-btn {
+            background: #2d1b2d;
+            border: none;
+            color: #ff6b9d;
+            width: 30px;
+            height: 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
             cursor: pointer;
-            box-shadow: 0 5px 15px rgba(255, 45, 109, 0.5);
-            z-index: 100;
         }
 
-        .badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: white;
-            color: #ff2d6d;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            font-size: 0.7rem;
+        /* Kitchen Orders */
+        .kitchen-orders, .ready-section {
+            padding: 15px;
+        }
+
+        .section-title {
+            color: #ff6b9d;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
             display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 8px;
+        }
+
+        .order-card {
+            background: linear-gradient(145deg, #1a101a, #120b12);
+            border-radius: 25px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 107, 157, 0.3);
+            transition: all 0.2s;
+        }
+
+        .new-order-card {
+            border-right: 4px solid #ff2d6d;
+            animation: pulse 1s infinite;
+        }
+
+        .ready-order-card {
+            border-right: 4px solid #2ecc71;
+            background: linear-gradient(145deg, #1a2a1a, #0f1a0f);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 107, 157, 0.2);
+        }
+
+        .order-number {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ff6b9d;
+        }
+
+        .order-time {
+            font-size: 0.7rem;
+            color: #8b6b8b;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            color: #ffd4e5;
+        }
+
+        .order-total {
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 107, 157, 0.2);
+            font-weight: bold;
+            color: #ff6b9d;
+        }
+
+        .btn-ready, .btn-complete {
+            border: none;
+            padding: 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
             font-weight: bold;
         }
 
+        .btn-ready {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+        }
+
+        .btn-complete {
+            background: linear-gradient(135deg, #ff2d6d, #ff6b9d);
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #8b6b8b;
+        }
+
+        /* Toast */
         .toast {
             position: fixed;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%) translateY(100px);
             background: linear-gradient(135deg, #ff2d6d, #ff6b9d);
-            padding: 12px 20px;
+            padding: 12px 24px;
             border-radius: 50px;
             color: white;
             transition: transform 0.3s;
@@ -359,10 +369,29 @@
             white-space: nowrap;
             max-width: 90%;
             text-align: center;
+            font-weight: bold;
         }
 
         .toast.show {
             transform: translateX(-50%) translateY(0);
+        }
+
+        /* Floating Bell */
+        .floating-bell {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #ff2d6d;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 5px 15px rgba(255, 45, 109, 0.5);
+            animation: bellRing 0.5s;
+            z-index: 100;
         }
     </style>
 </head>
@@ -388,7 +417,8 @@
         <div class="header">
             <button class="back-btn" onclick="backToMode()">↺ رجوع</button>
             <h1>🧾 كاشير | أستقبال الطلبات</h1>
-            <p style="font-size: 0.7rem;">🇮🇶 مطعم الحاج كاظم</p>
+            <p>🇮🇶 مطعم الحاج كاظم - بغداد</p>
+            <div class="connection-status" id="cashierStatus"></div>
         </div>
 
         <div class="products-grid" id="productsGrid"></div>
@@ -409,7 +439,7 @@
                     <span>الإجمالي:</span>
                     <span id="cashierTotal">0 د.ع</span>
                 </div>
-                <button class="btn-ready" onclick="sendOrderToKitchen()" style="width: 100%; margin-top: 10px; background: linear-gradient(135deg, #ff2d6d, #ff6b9d);">
+                <button class="btn-ready" onclick="sendOrderToKitchen()" style="background: linear-gradient(135deg, #ff2d6d, #ff6b9d); margin-top: 10px;">
                     📤 أرسل الطلب للمطبخ
                 </button>
                 <button onclick="clearCashierCart()" style="width: 100%; margin-top: 8px; background: #4a1f3a; color: #ff6b9d; border: none; padding: 10px; border-radius: 20px;">
@@ -424,38 +454,64 @@
         <div class="header">
             <button class="back-btn" onclick="backToMode()">↺ رجوع</button>
             <h1>👨‍🍳 المطبخ | تجهيز الطلبات</h1>
-            <p style="font-size: 0.7rem;">الطلبات الجديدة تجي هنا</p>
+            <p>الطلبات تجي لحظياً من الكاشير</p>
+            <div class="connection-status" id="kitchenStatus"></div>
         </div>
 
         <div class="kitchen-orders">
-            <h3 style="color: #ff6b9d; margin-bottom: 10px;">🆕 طلبات جديدة</h3>
-            <div id="newOrders"></div>
-
-            <div class="ready-orders">
-                <h3 class="ready-title">✅ طلبات جاهزة للتسليم</h3>
-                <div id="readyOrders"></div>
+            <div class="section-title">
+                <span>🆕</span> طلبات جديدة
             </div>
+            <div id="newOrders"></div>
+        </div>
+
+        <div class="ready-section">
+            <div class="section-title">
+                <span>✅</span> طلبات جاهزة للتسليم
+            </div>
+            <div id="readyOrders"></div>
         </div>
     </div>
 
     <div id="toast" class="toast"></div>
 
     <script>
-        // Data Storage
-        let orders = []; // { id, items, subtotal, tax, total, status, time, timestamp }
-        let currentCart = [];
-        let products = [];
+        // ============= إعدادات Ably =============
+        // مفتاح Ably الخاص بك
+        const ABLY_API_KEY = "Rb_5bw.uuY0Fg:xiw6RyPqBY6CAm7N69a60R4KNogO0QLPzuROjFPs0f4";
+        
+        let ably = null;
+        let channel = null;
         let currentMode = null;
         
+        // بيانات الطلبات
+        let orders = [];
+        let currentCart = [];
         let nextOrderNumber = 1;
+        
+        // قائمة المنتجات العراقية
+        let products = [
+            { id: 1, name: "تمن ومرق", price: 3500, emoji: "🍛" },
+            { id: 2, name: "مسكوف", price: 12000, emoji: "🐟" },
+            { id: 3, name: "دولمة", price: 8000, emoji: "🥬" },
+            { id: 4, name: "قوزي", price: 15000, emoji: "🍖" },
+            { id: 5, name: "كبة", price: 4000, emoji: "🥟" },
+            { id: 6, name: "مقلوبة", price: 6000, emoji: "🍚" },
+            { id: 7, name: "باقلاء", price: 3000, emoji: "🥣" },
+            { id: 8, name: "چاي", price: 500, emoji: "🍵" },
+            { id: 9, name: "سمبوسة", price: 1000, emoji: "🥟" },
+            { id: 10, name: "كباب", price: 8000, emoji: "🍢" },
+            { id: 11, name: "دجاج مشوي", price: 10000, emoji: "🍗" },
+            { id: 12, name: "عصير طبيعي", price: 1500, emoji: "🥤" }
+        ];
         
         const TAX_RATE = 0.15;
         
-        // Sound Functions
+        // ============= Functions =============
+        
         function playNewOrderSound() {
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                // Multiple beeps for new order
                 for(let i = 0; i < 3; i++) {
                     setTimeout(() => {
                         const osc = audioCtx.createOscillator();
@@ -472,10 +528,9 @@
             } catch(e) {}
         }
         
-        function playReadySound() {
+        function playBellSound() {
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                // Bell sound for ready order
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.connect(gain);
@@ -497,93 +552,111 @@
                     gain2.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
                     osc2.stop(audioCtx.currentTime + 0.3);
                 }, 200);
-            } catch(e) {}
-        }
-        
-        function playBellForCashier() {
-            try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                // Ding Dong sound for cashier
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.frequency.value = 880;
-                gain.gain.value = 0.4;
-                osc.start();
-                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.4);
-                osc.stop(audioCtx.currentTime + 0.4);
                 
-                setTimeout(() => {
-                    const osc2 = audioCtx.createOscillator();
-                    const gain2 = audioCtx.createGain();
-                    osc2.connect(gain2);
-                    gain2.connect(audioCtx.destination);
-                    osc2.frequency.value = 660;
-                    gain2.gain.value = 0.4;
-                    osc2.start();
-                    gain2.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
-                    osc2.stop(audioCtx.currentTime + 0.3);
-                }, 200);
-                
-                // Visual bell animation
+                // Visual bell
                 const bell = document.createElement('div');
+                bell.className = 'floating-bell';
                 bell.innerHTML = '🔔';
-                bell.style.position = 'fixed';
-                bell.style.top = '20px';
-                bell.style.right = '20px';
-                bell.style.fontSize = '40px';
-                bell.style.zIndex = '2000';
-                bell.style.animation = 'bellRing 0.5s';
                 document.body.appendChild(bell);
-                setTimeout(() => bell.remove(), 500);
+                setTimeout(() => bell.remove(), 800);
             } catch(e) {}
         }
         
-        // Load initial products
-        function loadProducts() {
-            const saved = localStorage.getItem('iraqi_products_v2');
-            if(saved) {
-                products = JSON.parse(saved);
-            } else {
-                products = [
-                    { id: 1, name: "تمن ومرق", price: 3500, emoji: "🍛" },
-                    { id: 2, name: "مسكوف", price: 12000, emoji: "🐟" },
-                    { id: 3, name: "دولمة", price: 8000, emoji: "🥬" },
-                    { id: 4, name: "قوزي", price: 15000, emoji: "🍖" },
-                    { id: 5, name: "كبة", price: 4000, emoji: "🥟" },
-                    { id: 6, name: "مقلوبة", price: 6000, emoji: "🍚" },
-                    { id: 7, name: "باقلاء", price: 3000, emoji: "🥣" },
-                    { id: 8, name: "چاي", price: 500, emoji: "🍵" }
-                ];
-                saveProducts();
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+        
+        // ============= Ably Connection =============
+        
+        function initAbly() {
+            try {
+                ably = new Ably.Realtime({ key: ABLY_API_KEY });
+                channel = ably.channels.get("restaurant-orders");
+                
+                ably.connection.on("connected", () => {
+                    console.log("✅ متصل بـ Ably");
+                    updateConnectionStatus(true);
+                    showToast("✅ متصل بالشبكة - جاهز للعمل");
+                });
+                
+                ably.connection.on("failed", () => {
+                    console.log("❌ فشل الاتصال بـ Ably");
+                    updateConnectionStatus(false);
+                    showToast("❌ مشكلة في الاتصال بالإنترنت");
+                });
+                
+                // استلام الطلبات الجديدة
+                channel.subscribe("new-order", (message) => {
+                    console.log("📦 طلب جديد:", message.data);
+                    const newOrder = message.data;
+                    
+                    if(currentMode === 'kitchen') {
+                        orders.unshift(newOrder);
+                        refreshKitchenView();
+                        playNewOrderSound();
+                        showToast(`🔔 طلب جديد #${newOrder.orderNumber} وصل للمطبخ!`);
+                    }
+                });
+                
+                // استلام إشعار الطلب الجاهز
+                channel.subscribe("order-ready", (message) => {
+                    console.log("✅ طلب جاهز:", message.data);
+                    const readyOrder = message.data;
+                    
+                    if(currentMode === 'kitchen') {
+                        const index = orders.findIndex(o => o.id === readyOrder.id);
+                        if(index !== -1) {
+                            orders[index].status = 'ready';
+                            refreshKitchenView();
+                        }
+                    }
+                    
+                    if(currentMode === 'cashier') {
+                        playBellSound();
+                        showToast(`🔔🔔 طلب #${readyOrder.orderNumber} جاهز للتسليم! 🔔🔔`);
+                    }
+                });
+                
+                // استلام إشعار اكتمال الطلب
+                channel.subscribe("order-completed", (message) => {
+                    console.log("🎉 طلب مكتمل:", message.data);
+                    const completedOrder = message.data;
+                    
+                    if(currentMode === 'kitchen') {
+                        orders = orders.filter(o => o.id !== completedOrder.id);
+                        refreshKitchenView();
+                    }
+                });
+                
+                return true;
+            } catch(e) {
+                console.error("خطأ في Ably:", e);
+                showToast("❌ خطأ في الاتصال بخدمة Ably");
+                return false;
             }
-            
-            const savedOrders = localStorage.getItem('iraqi_orders');
-            if(savedOrders) {
-                orders = JSON.parse(savedOrders);
-                const maxNum = Math.max(...orders.map(o => o.orderNumber), 0);
-                nextOrderNumber = maxNum + 1;
-            }
         }
         
-        function saveProducts() {
-            localStorage.setItem('iraqi_products_v2', JSON.stringify(products));
+        function updateConnectionStatus(connected) {
+            const statusElements = document.querySelectorAll('.connection-status');
+            statusElements.forEach(el => {
+                el.style.background = connected ? '#2ecc71' : '#e74c3c';
+                el.style.boxShadow = connected ? '0 0 5px #2ecc71' : '0 0 5px #e74c3c';
+            });
         }
         
-        function saveOrders() {
-            localStorage.setItem('iraqi_orders', JSON.stringify(orders));
-        }
+        // ============= Cashier Functions =============
         
-        // Display products for cashier
         function displayProducts() {
             const grid = document.getElementById('productsGrid');
             if(!grid) return;
             grid.innerHTML = products.map(p => `
                 <div class="product-card" onclick="addToCart(${p.id})">
-                    <div style="font-size: 1.8rem;">${p.emoji || '🍽️'}</div>
-                    <div style="font-size: 0.85rem; color: #ffd4e5;">${p.name}</div>
-                    <div style="color: #ff6b9d; font-weight: bold;">${p.price.toFixed(0)} د.ع</div>
+                    <div class="product-emoji">${p.emoji}</div>
+                    <div class="product-name">${p.name}</div>
+                    <div class="product-price">${p.price}</div>
                 </div>
             `).join('');
         }
@@ -613,15 +686,15 @@
             
             container.innerHTML = currentCart.map((item, idx) => `
                 <div class="cart-item">
-                    <div style="font-size: 1.2rem;">${item.emoji || '🍽️'}</div>
+                    <div style="font-size: 1.2rem;">${item.emoji}</div>
                     <div style="flex: 1;">
                         <div style="color: #ffd4e5;">${item.name}</div>
                         <div style="color: #ff6b9d; font-size: 0.7rem;">${item.price} د.ع</div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px;">
-                        <button onclick="updateQty(${idx}, -1)" style="background: #2d1b2d; border: none; color: #ff6b9d; width: 28px; height: 28px; border-radius: 10px;">-</button>
+                        <button class="qty-btn" onclick="updateQty(${idx}, -1)">-</button>
                         <span style="color: white;">${item.quantity}</span>
-                        <button onclick="updateQty(${idx}, 1)" style="background: #2d1b2d; border: none; color: #ff6b9d; width: 28px; height: 28px; border-radius: 10px;">+</button>
+                        <button class="qty-btn" onclick="updateQty(${idx}, 1)">+</button>
                     </div>
                 </div>
             `).join('');
@@ -653,13 +726,18 @@
             if(currentCart.length > 0 && confirm('تريد تفريغ السلة؟')) {
                 currentCart = [];
                 updateCashierCart();
-                showToast('🗑️ السلة فريغت', '#ff6b9d');
+                showToast('🗑️ السلة فريغت');
             }
         }
         
         function sendOrderToKitchen() {
             if(currentCart.length === 0) {
-                showToast('⚠️ السلة فاضية! أضف أكلات', '#ff6b9d');
+                showToast('⚠️ السلة فاضية! أضف أكلات');
+                return;
+            }
+            
+            if(!channel) {
+                showToast('❌ المشكلة بالاتصال، حاول مرة أخرى');
                 return;
             }
             
@@ -670,32 +748,31 @@
             const newOrder = {
                 id: Date.now(),
                 orderNumber: nextOrderNumber++,
-                items: [...currentCart],
+                items: currentCart.map(i => ({...i})),
                 subtotal: subtotal,
                 tax: tax,
                 total: total,
-                status: 'new', // new, ready, completed
+                status: 'new',
                 time: new Date().toLocaleTimeString('ar-IQ'),
-                timestamp: Date.now()
+                date: new Date().toLocaleDateString('ar-IQ')
             };
             
-            orders.push(newOrder);
-            saveOrders();
+            // إرسال الطلب عبر Ably للمطبخ
+            channel.publish("new-order", newOrder, (err) => {
+                if(err) {
+                    console.error("خطأ في الإرسال:", err);
+                    showToast("❌ فشل إرسال الطلب");
+                } else {
+                    showToast(`✅ تم إرسال الطلب #${newOrder.orderNumber} للمطبخ!`);
+                }
+            });
             
-            // Play sound in kitchen
-            playNewOrderSound();
-            
-            showToast(`✅ تم إرسال الطلب رقم ${newOrder.orderNumber} للمطبخ!`, '#27ae60');
-            
-            // Clear cart
+            // تفريغ السلة
             currentCart = [];
             updateCashierCart();
-            
-            // If kitchen is open, refresh it
-            if(currentMode === 'kitchen') {
-                refreshKitchenView();
-            }
         }
+        
+        // ============= Kitchen Functions =============
         
         function refreshKitchenView() {
             const newOrdersDiv = document.getElementById('newOrders');
@@ -707,10 +784,10 @@
             const readyOrders = orders.filter(o => o.status === 'ready');
             
             if(newOrders.length === 0) {
-                newOrdersDiv.innerHTML = '<div style="color: #8b6b8b; text-align: center; padding: 20px;">ماكو طلبات جديدة</div>';
+                newOrdersDiv.innerHTML = '<div class="empty-state">📭 ماكو طلبات جديدة</div>';
             } else {
                 newOrdersDiv.innerHTML = newOrders.map(order => `
-                    <div class="order-card">
+                    <div class="order-card new-order-card">
                         <div class="order-header">
                             <span class="order-number">طلب #${order.orderNumber}</span>
                             <span class="order-time">${order.time}</span>
@@ -726,19 +803,18 @@
                         <div class="order-total">
                             الإجمالي: ${order.total.toFixed(0)} د.ع
                         </div>
-                        <div class="kitchen-actions">
-                            <button class="btn-ready" onclick="markOrderReady(${order.id})">✅ جهز الطلب</button>
-                            <button class="btn-cancel-order" onclick="cancelOrder(${order.id})">🗑️ إلغاء</button>
-                        </div>
+                        <button class="btn-ready" onclick="markOrderReady(${order.id})">
+                            ✅ جهز الطلب
+                        </button>
                     </div>
                 `).join('');
             }
             
             if(readyOrders.length === 0) {
-                readyOrdersDiv.innerHTML = '<div style="color: #8b6b8b; text-align: center; padding: 20px;">ماكو طلبات جاهزة</div>';
+                readyOrdersDiv.innerHTML = '<div class="empty-state">📦 ماكو طلبات جاهزة</div>';
             } else {
                 readyOrdersDiv.innerHTML = readyOrders.map(order => `
-                    <div class="ready-card">
+                    <div class="order-card ready-order-card">
                         <div class="order-header">
                             <span class="order-number">طلب #${order.orderNumber}</span>
                             <span class="order-time">${order.time}</span>
@@ -754,8 +830,8 @@
                         <div class="order-total">
                             الإجمالي: ${order.total.toFixed(0)} د.ع
                         </div>
-                        <button class="btn-ready" onclick="completeOrder(${order.id})" style="margin-top: 10px; background: #ff2d6d;">
-                            🛎️ تسليم للزبون + جرس للكاشير
+                        <button class="btn-complete" onclick="completeOrder(${order.id})">
+                            🛎️ سلم الطلب + جرس للكاشير
                         </button>
                     </div>
                 `).join('');
@@ -766,9 +842,16 @@
             const order = orders.find(o => o.id === orderId);
             if(order) {
                 order.status = 'ready';
-                saveOrders();
                 refreshKitchenView();
-                showToast(`✅ الطلب #${order.orderNumber} جاهز!`, '#27ae60');
+                showToast(`✅ الطلب #${order.orderNumber} جاهز!`);
+                
+                // إرسال إشعار للكاشير أن الطلب جاهز
+                if(channel) {
+                    channel.publish("order-ready", {
+                        id: order.id,
+                        orderNumber: order.orderNumber
+                    });
+                }
             }
         }
         
@@ -776,24 +859,20 @@
             const order = orders.find(o => o.id === orderId);
             if(order) {
                 orders = orders.filter(o => o.id !== orderId);
-                saveOrders();
                 refreshKitchenView();
+                showToast(`🎉 تم تسليم الطلب #${order.orderNumber}`);
                 
-                // Play bell sound for cashier
-                playBellForCashier();
-                
-                showToast(`🛎️ الطلب #${order.orderNumber} تم تسليمه! جرس راح للكاشير`, '#ff6b9d');
+                // إرسال إشعار اكتمال الطلب
+                if(channel) {
+                    channel.publish("order-completed", {
+                        id: order.id,
+                        orderNumber: order.orderNumber
+                    });
+                }
             }
         }
         
-        function cancelOrder(orderId) {
-            if(confirm('تريد تلغي الطلب؟')) {
-                orders = orders.filter(o => o.id !== orderId);
-                saveOrders();
-                refreshKitchenView();
-                showToast(`🗑️ تم إلغاء الطلب`, '#e74c3c');
-            }
-        }
+        // ============= Mode Selection =============
         
         function selectMode(mode) {
             currentMode = mode;
@@ -805,6 +884,7 @@
                 updateCashierCart();
             } else {
                 document.getElementById('kitchenApp').classList.add('active');
+                orders = [];
                 refreshKitchenView();
             }
         }
@@ -816,23 +896,21 @@
             currentMode = null;
         }
         
-        function showToast(msg, color) {
-            const toast = document.getElementById('toast');
-            toast.textContent = msg;
-            toast.style.background = `linear-gradient(135deg, ${color}, ${color}dd)`;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2000);
+        // ============= Initialization =============
+        
+        // تحميل المنتجات من localStorage
+        const savedProducts = localStorage.getItem('iraqi_products');
+        if(savedProducts) {
+            products = JSON.parse(savedProducts);
         }
         
-        // Auto refresh kitchen view every 2 seconds
-        setInterval(() => {
-            if(currentMode === 'kitchen') {
-                refreshKitchenView();
-            }
-        }, 2000);
+        // حفظ المنتجات عند التعديل
+        window.saveProducts = function() {
+            localStorage.setItem('iraqi_products', JSON.stringify(products));
+        };
         
-        // Initial load
-        loadProducts();
+        // بدء Ably
+        initAbly();
     </script>
 </body>
-  </html>
+</html>
