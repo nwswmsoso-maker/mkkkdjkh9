@@ -97,7 +97,7 @@
             align-items: center;
             justify-content: center;
             gap: 12px;
-            transition: all 0.2s ease;
+            transition: all 0.1s ease;
         }
 
         .mode-btn:active {
@@ -134,6 +134,14 @@
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes bellRing {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(15deg) scale(1.1); }
+            50% { transform: rotate(-15deg) scale(1.1); }
+            75% { transform: rotate(5deg) scale(1.05); }
+            100% { transform: rotate(0deg) scale(1); }
         }
 
         @keyframes slideDown {
@@ -466,6 +474,23 @@
             animation: checkBounce 0.4s ease;
         }
 
+        .bell-animation {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ff2d6d;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            animation: bellRing 0.5s;
+            z-index: 1000;
+            box-shadow: 0 5px 20px rgba(255, 45, 109, 0.5);
+        }
+
         .toast {
             position: fixed;
             bottom: 20px;
@@ -612,18 +637,23 @@ function formatNumber(num) {
     return formatted.replace(/[0-9,]/g, m => arabic[m] || m) + ' د.ع';
 }
 
-// ============= إشعار تسليم أنيق =============
-function showDeliveryNotification(orderNumber, tableNumber) {
-    // إنشاء عنصر الإشعار
-    let notification = document.createElement('div');
-    notification.className = 'delivery-notification';
-    notification.innerHTML = `
-        <div class="check-icon">✓</div>
-        <div>✅ تم تسليم الطلب #${orderNumber} لطاولة ${tableNumber}</div>
-    `;
-    document.body.appendChild(notification);
-    
-    // تشغيل الصوت
+// ============= الأصوات =============
+function playClickSound() {
+    try {
+        let ctx = new (AudioContext || webkitAudioContext)();
+        let osc = ctx.createOscillator();
+        let gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 800;
+        gain.gain.value = 0.1;
+        osc.start();
+        gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.08);
+        osc.stop(ctx.currentTime + 0.08);
+    } catch(e) { console.log("صوت غير مدعوم"); }
+}
+
+function playBellSound() {
     try {
         let ctx = new (AudioContext || webkitAudioContext)();
         let osc = ctx.createOscillator();
@@ -631,7 +661,7 @@ function showDeliveryNotification(orderNumber, tableNumber) {
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.frequency.value = 880;
-        gain.gain.value = 0.2;
+        gain.gain.value = 0.3;
         osc.start();
         gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.3);
         osc.stop(ctx.currentTime + 0.3);
@@ -642,17 +672,60 @@ function showDeliveryNotification(orderNumber, tableNumber) {
             osc2.connect(gain2);
             gain2.connect(ctx.destination);
             osc2.frequency.value = 660;
-            gain2.gain.value = 0.2;
+            gain2.gain.value = 0.25;
             osc2.start();
             gain2.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.25);
             osc2.stop(ctx.currentTime + 0.25);
+        }, 150);
+        
+        let bell = document.createElement('div');
+        bell.className = 'bell-animation';
+        bell.innerHTML = '🔔';
+        document.body.appendChild(bell);
+        setTimeout(() => bell.remove(), 600);
+    } catch(e) {}
+}
+
+function playCompleteSound() {
+    try {
+        let ctx = new (AudioContext || webkitAudioContext)();
+        let osc = ctx.createOscillator();
+        let gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 1046.5;
+        gain.gain.value = 0.3;
+        osc.start();
+        gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.4);
+        osc.stop(ctx.currentTime + 0.4);
+        
+        setTimeout(() => {
+            let osc2 = ctx.createOscillator();
+            let gain2 = ctx.createGain();
+            osc2.connect(gain2);
+            gain2.connect(ctx.destination);
+            osc2.frequency.value = 1318.51;
+            gain2.gain.value = 0.25;
+            osc2.start();
+            gain2.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.3);
+            osc2.stop(ctx.currentTime + 0.3);
         }, 200);
     } catch(e) {}
+}
+
+// ============= إشعار تسليم أنيق =============
+function showDeliveryNotification(orderNumber, tableNumber) {
+    let notification = document.createElement('div');
+    notification.className = 'delivery-notification';
+    notification.innerHTML = `
+        <div class="check-icon">✓</div>
+        <div>✅ تم تسليم الطلب #${orderNumber} لطاولة ${tableNumber}</div>
+    `;
+    document.body.appendChild(notification);
     
-    // إظهار الإشعار
+    playCompleteSound();
+    
     setTimeout(() => notification.classList.add('show'), 10);
-    
-    // إخفاء الإشعار بعد 3 ثواني
     setTimeout(() => {
         notification.classList.remove('show');
         setTimeout(() => notification.remove(), 300);
@@ -699,6 +772,7 @@ function initAbly() {
                 allOrders.unshift(order);
                 saveData();
                 refreshKitchen();
+                playBellSound();
                 showToast(`🔔 طلب جديد #${order.orderNumber} - طاولة ${order.tableNumber}`);
             }
         });
@@ -724,6 +798,7 @@ function initAbly() {
                     time: data.time
                 });
                 updateCashierReady();
+                playBellSound();
                 showToast(`🔔 طلب #${data.orderNumber} - طاولة ${data.tableNumber} جاهز!`);
             }
         });
@@ -758,6 +833,7 @@ function createTableButtons() {
 }
 
 function selectTable(n) {
+    playClickSound();
     selectedTable = n;
     createTableButtons();
     document.getElementById('selectedTableLabel').innerText = n.toString().replace(/[0-9]/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
@@ -776,6 +852,7 @@ function displayProducts() {
 }
 
 function addToCart(id) {
+    playClickSound();
     let product = products.find(p => p.id === id);
     if(!product) return;
     let existing = currentCart.find(i => i.id === id);
@@ -810,6 +887,7 @@ function updateCart() {
 }
 
 function updateQty(idx, change) {
+    playClickSound();
     if(idx >= 0 && idx < currentCart.length) {
         let newQty = currentCart[idx].quantity + change;
         if(newQty <= 0) currentCart.splice(idx, 1);
@@ -829,6 +907,7 @@ function updateSummary() {
 
 function clearCashierCart() {
     if(currentCart.length > 0 && confirm('تريد تفريغ السلة؟')) {
+        playClickSound();
         currentCart = [];
         updateCart();
         showToast('🗑️ السلة فريغت');
@@ -844,6 +923,7 @@ function sendOrderToKitchen() {
         showToast('❌ مشكلة بالاتصال');
         return;
     }
+    playClickSound();
     let sub = currentCart.reduce((s, i) => s + (i.price * i.quantity), 0);
     let tax = sub * TAX_RATE;
     let total = sub + tax;
@@ -896,9 +976,7 @@ function updateCashierReady() {
 }
 
 function completeOrder(id, num, table) {
-    // إظهار الإشعار الأنيق مع الصوت
     showDeliveryNotification(num, table);
-    
     cashierReadyOrders = cashierReadyOrders.filter(o => o.id !== id);
     updateCashierReady();
     if(channel) channel.publish("order-completed", { id: id, orderNumber: num });
