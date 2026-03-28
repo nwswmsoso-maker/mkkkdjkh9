@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>نظام مطعم عراقي | كاشير + مطبخ - Ably</title>
+    <title>نظام مطعم عراقي | كاشير + مطبخ متكامل</title>
     
     <!-- Ably SDK -->
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
@@ -49,14 +49,8 @@
         }
 
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .mode-card h2 {
@@ -193,7 +187,7 @@
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             gap: 12px;
             padding: 15px;
-            max-height: 45vh;
+            max-height: 40vh;
             overflow-y: auto;
         }
 
@@ -230,6 +224,45 @@
         .product-price::after {
             content: " د.ع";
             font-size: 0.7rem;
+        }
+
+        /* Table Number Selector */
+        .table-selector {
+            background: linear-gradient(145deg, #1a101a, #120b12);
+            margin: 15px;
+            padding: 12px;
+            border-radius: 25px;
+            border: 1px solid rgba(255, 107, 157, 0.3);
+        }
+
+        .table-selector label {
+            color: #ff6b9d;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .table-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .table-btn {
+            background: #2d1b2d;
+            border: 1px solid #ff6b9d;
+            color: #ff6b9d;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .table-btn.active {
+            background: linear-gradient(135deg, #ff2d6d, #ff6b9d);
+            color: white;
+            border: none;
         }
 
         /* Cart Section */
@@ -308,6 +341,14 @@
             color: #ff6b9d;
         }
 
+        .table-number {
+            background: #ff2d6d;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            color: white;
+        }
+
         .order-time {
             font-size: 0.7rem;
             color: #8b6b8b;
@@ -352,6 +393,25 @@
             text-align: center;
             padding: 40px;
             color: #8b6b8b;
+        }
+
+        /* Cashier Ready Orders */
+        .cashier-ready-orders {
+            background: #0f080f;
+            margin: 15px;
+            padding: 15px;
+            border-radius: 25px;
+            max-height: 35vh;
+            overflow-y: auto;
+        }
+
+        .ready-order-card-cashier {
+            background: linear-gradient(145deg, #1a2a1a, #0f1a0f);
+            border-radius: 20px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #2ecc71;
+            animation: fadeIn 0.3s;
         }
 
         /* Toast */
@@ -421,10 +481,16 @@
             <div class="connection-status" id="cashierStatus"></div>
         </div>
 
+        <!-- Table Number Selector -->
+        <div class="table-selector">
+            <label>📌 رقم الطاولة:</label>
+            <div class="table-buttons" id="tableButtons"></div>
+        </div>
+
         <div class="products-grid" id="productsGrid"></div>
 
         <div class="cart-section">
-            <h3 style="color: #ff6b9d; margin-bottom: 10px;">🛒 الطلب الحالي</h3>
+            <h3 style="color: #ff6b9d; margin-bottom: 10px;">🛒 الطلب الحالي - طاولة <span id="selectedTableLabel">1</span></h3>
             <div id="cashierCart"></div>
             <div style="margin-top: 12px;">
                 <div style="display: flex; justify-content: space-between; margin: 8px 0;">
@@ -446,6 +512,12 @@
                     🗑️ فريغ السلة
                 </button>
             </div>
+        </div>
+
+        <!-- Ready Orders Section for Cashier -->
+        <div class="cashier-ready-orders">
+            <h3 style="color: #2ecc71; margin-bottom: 12px;">✅ طلبات جاهزة للتسليم</h3>
+            <div id="cashierReadyOrders"></div>
         </div>
     </div>
 
@@ -477,7 +549,6 @@
 
     <script>
         // ============= إعدادات Ably =============
-        // مفتاح Ably الخاص بك
         const ABLY_API_KEY = "Rb_5bw.uuY0Fg:xiw6RyPqBY6CAm7N69a60R4KNogO0QLPzuROjFPs0f4";
         
         let ably = null;
@@ -485,9 +556,13 @@
         let currentMode = null;
         
         // بيانات الطلبات
-        let orders = [];
+        let allOrders = []; // جميع الطلبات { id, orderNumber, tableNumber, items, subtotal, tax, total, status, time, date, timestamp }
         let currentCart = [];
+        let selectedTable = 1;
         let nextOrderNumber = 1;
+        
+        // الطلبات الجاهزة للكاشير
+        let cashierReadyOrders = [];
         
         // قائمة المنتجات العراقية
         let products = [
@@ -506,6 +581,31 @@
         ];
         
         const TAX_RATE = 0.15;
+        
+        // ============= حفظ واسترجاع البيانات =============
+        
+        function saveAllData() {
+            localStorage.setItem('iraqi_all_orders', JSON.stringify(allOrders));
+            localStorage.setItem('iraqi_next_order_number', nextOrderNumber);
+            localStorage.setItem('iraqi_products', JSON.stringify(products));
+        }
+        
+        function loadAllData() {
+            const savedOrders = localStorage.getItem('iraqi_all_orders');
+            if(savedOrders) {
+                allOrders = JSON.parse(savedOrders);
+            }
+            
+            const savedNextNumber = localStorage.getItem('iraqi_next_order_number');
+            if(savedNextNumber) {
+                nextOrderNumber = parseInt(savedNextNumber);
+            }
+            
+            const savedProducts = localStorage.getItem('iraqi_products');
+            if(savedProducts) {
+                products = JSON.parse(savedProducts);
+            }
+        }
         
         // ============= Functions =============
         
@@ -553,7 +653,6 @@
                     osc2.stop(audioCtx.currentTime + 0.3);
                 }, 200);
                 
-                // Visual bell
                 const bell = document.createElement('div');
                 bell.className = 'floating-bell';
                 bell.innerHTML = '🔔';
@@ -579,13 +678,11 @@
                 ably.connection.on("connected", () => {
                     console.log("✅ متصل بـ Ably");
                     updateConnectionStatus(true);
-                    showToast("✅ متصل بالشبكة - جاهز للعمل");
                 });
                 
                 ably.connection.on("failed", () => {
-                    console.log("❌ فشل الاتصال بـ Ably");
+                    console.log("❌ فشل الاتصال");
                     updateConnectionStatus(false);
-                    showToast("❌ مشكلة في الاتصال بالإنترنت");
                 });
                 
                 // استلام الطلبات الجديدة
@@ -594,29 +691,45 @@
                     const newOrder = message.data;
                     
                     if(currentMode === 'kitchen') {
-                        orders.unshift(newOrder);
+                        allOrders.unshift(newOrder);
+                        saveAllData();
                         refreshKitchenView();
                         playNewOrderSound();
-                        showToast(`🔔 طلب جديد #${newOrder.orderNumber} وصل للمطبخ!`);
+                        showToast(`🔔 طلب جديد #${newOrder.orderNumber} - طاولة ${newOrder.tableNumber}`);
                     }
                 });
                 
-                // استلام إشعار الطلب الجاهز
+                // استلام الطلبات الجاهزة
                 channel.subscribe("order-ready", (message) => {
                     console.log("✅ طلب جاهز:", message.data);
-                    const readyOrder = message.data;
+                    const readyOrderData = message.data;
+                    
+                    // البحث عن الطلب في allOrders وتحديث حالته
+                    const orderIndex = allOrders.findIndex(o => o.id === readyOrderData.id);
+                    if(orderIndex !== -1) {
+                        allOrders[orderIndex].status = 'ready';
+                        saveAllData();
+                    }
                     
                     if(currentMode === 'kitchen') {
-                        const index = orders.findIndex(o => o.id === readyOrder.id);
-                        if(index !== -1) {
-                            orders[index].status = 'ready';
-                            refreshKitchenView();
-                        }
+                        refreshKitchenView();
+                        showToast(`✅ الطلب #${readyOrderData.orderNumber} جاهز!`);
                     }
                     
                     if(currentMode === 'cashier') {
+                        // إضافة الطلب الجاهز لقائمة الكاشير
+                        const readyOrder = {
+                            id: readyOrderData.id,
+                            orderNumber: readyOrderData.orderNumber,
+                            tableNumber: readyOrderData.tableNumber,
+                            items: readyOrderData.items,
+                            total: readyOrderData.total,
+                            time: readyOrderData.time
+                        };
+                        cashierReadyOrders.unshift(readyOrder);
+                        updateCashierReadyOrders();
                         playBellSound();
-                        showToast(`🔔🔔 طلب #${readyOrder.orderNumber} جاهز للتسليم! 🔔🔔`);
+                        showToast(`🔔🔔 طلب #${readyOrderData.orderNumber} - طاولة ${readyOrderData.tableNumber} جاهز! 🔔🔔`);
                     }
                 });
                 
@@ -626,15 +739,22 @@
                     const completedOrder = message.data;
                     
                     if(currentMode === 'kitchen') {
-                        orders = orders.filter(o => o.id !== completedOrder.id);
+                        allOrders = allOrders.filter(o => o.id !== completedOrder.id);
+                        saveAllData();
                         refreshKitchenView();
+                    }
+                    
+                    if(currentMode === 'cashier') {
+                        // حذف الطلب من قائمة الطلبات الجاهزة
+                        cashierReadyOrders = cashierReadyOrders.filter(o => o.id !== completedOrder.id);
+                        updateCashierReadyOrders();
+                        showToast(`✅ تم تسليم الطلب #${completedOrder.orderNumber}`);
                     }
                 });
                 
                 return true;
             } catch(e) {
                 console.error("خطأ في Ably:", e);
-                showToast("❌ خطأ في الاتصال بخدمة Ably");
                 return false;
             }
         }
@@ -645,6 +765,26 @@
                 el.style.background = connected ? '#2ecc71' : '#e74c3c';
                 el.style.boxShadow = connected ? '0 0 5px #2ecc71' : '0 0 5px #e74c3c';
             });
+        }
+        
+        // ============= Table Buttons =============
+        
+        function createTableButtons() {
+            const container = document.getElementById('tableButtons');
+            if(!container) return;
+            
+            const tables = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+            container.innerHTML = tables.map(num => `
+                <button class="table-btn ${selectedTable === num ? 'active' : ''}" onclick="selectTable(${num})">
+                    طاولة ${num}
+                </button>
+            `).join('');
+        }
+        
+        function selectTable(tableNum) {
+            selectedTable = tableNum;
+            createTableButtons();
+            document.getElementById('selectedTableLabel').innerText = selectedTable;
         }
         
         // ============= Cashier Functions =============
@@ -737,7 +877,7 @@
             }
             
             if(!channel) {
-                showToast('❌ المشكلة بالاتصال، حاول مرة أخرى');
+                showToast('❌ مشكلة في الاتصال، حاول مرة أخرى');
                 return;
             }
             
@@ -748,169 +888,71 @@
             const newOrder = {
                 id: Date.now(),
                 orderNumber: nextOrderNumber++,
+                tableNumber: selectedTable,
                 items: currentCart.map(i => ({...i})),
                 subtotal: subtotal,
                 tax: tax,
                 total: total,
                 status: 'new',
                 time: new Date().toLocaleTimeString('ar-IQ'),
-                date: new Date().toLocaleDateString('ar-IQ')
+                date: new Date().toLocaleDateString('ar-IQ'),
+                timestamp: Date.now()
             };
             
-            // إرسال الطلب عبر Ably للمطبخ
+            allOrders.push(newOrder);
+            saveAllData();
+            
             channel.publish("new-order", newOrder, (err) => {
                 if(err) {
-                    console.error("خطأ في الإرسال:", err);
+                    console.error("خطأ:", err);
                     showToast("❌ فشل إرسال الطلب");
                 } else {
-                    showToast(`✅ تم إرسال الطلب #${newOrder.orderNumber} للمطبخ!`);
+                    showToast(`✅ تم إرسال الطلب #${newOrder.orderNumber} - طاولة ${selectedTable} للمطبخ!`);
                 }
             });
             
-            // تفريغ السلة
             currentCart = [];
             updateCashierCart();
         }
         
-        // ============= Kitchen Functions =============
-        
-        function refreshKitchenView() {
-            const newOrdersDiv = document.getElementById('newOrders');
-            const readyOrdersDiv = document.getElementById('readyOrders');
+        function updateCashierReadyOrders() {
+            const container = document.getElementById('cashierReadyOrders');
+            if(!container) return;
             
-            if(!newOrdersDiv) return;
-            
-            const newOrders = orders.filter(o => o.status === 'new');
-            const readyOrders = orders.filter(o => o.status === 'ready');
-            
-            if(newOrders.length === 0) {
-                newOrdersDiv.innerHTML = '<div class="empty-state">📭 ماكو طلبات جديدة</div>';
-            } else {
-                newOrdersDiv.innerHTML = newOrders.map(order => `
-                    <div class="order-card new-order-card">
-                        <div class="order-header">
-                            <span class="order-number">طلب #${order.orderNumber}</span>
-                            <span class="order-time">${order.time}</span>
-                        </div>
-                        <div class="order-items">
-                            ${order.items.map(item => `
-                                <div class="order-item">
-                                    <span>${item.emoji} ${item.name}</span>
-                                    <span>${item.quantity} × ${item.price.toFixed(0)}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <div class="order-total">
-                            الإجمالي: ${order.total.toFixed(0)} د.ع
-                        </div>
-                        <button class="btn-ready" onclick="markOrderReady(${order.id})">
-                            ✅ جهز الطلب
-                        </button>
-                    </div>
-                `).join('');
+            if(cashierReadyOrders.length === 0) {
+                container.innerHTML = '<div style="color: #8b6b8b; text-align: center;">📭 ماكو طلبات جاهزة</div>';
+                return;
             }
             
-            if(readyOrders.length === 0) {
-                readyOrdersDiv.innerHTML = '<div class="empty-state">📦 ماكو طلبات جاهزة</div>';
-            } else {
-                readyOrdersDiv.innerHTML = readyOrders.map(order => `
-                    <div class="order-card ready-order-card">
-                        <div class="order-header">
-                            <span class="order-number">طلب #${order.orderNumber}</span>
-                            <span class="order-time">${order.time}</span>
-                        </div>
-                        <div class="order-items">
-                            ${order.items.map(item => `
-                                <div class="order-item">
-                                    <span>${item.emoji} ${item.name} x${item.quantity}</span>
-                                    <span>${(item.price * item.quantity).toFixed(0)} د.ع</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <div class="order-total">
-                            الإجمالي: ${order.total.toFixed(0)} د.ع
-                        </div>
-                        <button class="btn-complete" onclick="completeOrder(${order.id})">
-                            🛎️ سلم الطلب + جرس للكاشير
-                        </button>
+            container.innerHTML = cashierReadyOrders.map(order => `
+                <div class="ready-order-card-cashier">
+                    <div class="order-header">
+                        <span class="order-number">طلب #${order.orderNumber}</span>
+                        <span class="table-number">طاولة ${order.tableNumber}</span>
+                        <span class="order-time">${order.time}</span>
                     </div>
-                `).join('');
-            }
+                    <div class="order-items">
+                        ${order.items.map(item => `
+                            <div class="order-item">
+                                <span>${item.emoji} ${item.name} x${item.quantity}</span>
+                                <span>${(item.price * item.quantity).toFixed(0)} د.ع</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="order-total">
+                        الإجمالي: ${order.total.toFixed(0)} د.ع
+                    </div>
+                    <button class="btn-complete" onclick="completeOrderFromCashier(${order.id}, ${order.orderNumber})" style="margin-top: 10px;">
+                        🛎️ تم تسليم الطلب للزبون
+                    </button>
+                </div>
+            `).join('');
         }
         
-        function markOrderReady(orderId) {
-            const order = orders.find(o => o.id === orderId);
-            if(order) {
-                order.status = 'ready';
-                refreshKitchenView();
-                showToast(`✅ الطلب #${order.orderNumber} جاهز!`);
+        function completeOrderFromCashier(orderId, orderNumber) {
+            if(confirm(`تأكيد تسليم الطلب #${orderNumber}؟`)) {
+                cashierReadyOrders = cashierReadyOrders.filter(o => o.id !== orderId);
+                updateCashierReadyOrders();
                 
-                // إرسال إشعار للكاشير أن الطلب جاهز
-                if(channel) {
-                    channel.publish("order-ready", {
-                        id: order.id,
-                        orderNumber: order.orderNumber
-                    });
-                }
-            }
-        }
-        
-        function completeOrder(orderId) {
-            const order = orders.find(o => o.id === orderId);
-            if(order) {
-                orders = orders.filter(o => o.id !== orderId);
-                refreshKitchenView();
-                showToast(`🎉 تم تسليم الطلب #${order.orderNumber}`);
-                
-                // إرسال إشعار اكتمال الطلب
                 if(channel) {
                     channel.publish("order-completed", {
-                        id: order.id,
-                        orderNumber: order.orderNumber
-                    });
-                }
-            }
-        }
-        
-        // ============= Mode Selection =============
-        
-        function selectMode(mode) {
-            currentMode = mode;
-            document.getElementById('modeSelection').style.display = 'none';
-            
-            if(mode === 'cashier') {
-                document.getElementById('cashierApp').classList.add('active');
-                displayProducts();
-                updateCashierCart();
-            } else {
-                document.getElementById('kitchenApp').classList.add('active');
-                orders = [];
-                refreshKitchenView();
-            }
-        }
-        
-        function backToMode() {
-            document.getElementById('cashierApp').classList.remove('active');
-            document.getElementById('kitchenApp').classList.remove('active');
-            document.getElementById('modeSelection').style.display = 'flex';
-            currentMode = null;
-        }
-        
-        // ============= Initialization =============
-        
-        // تحميل المنتجات من localStorage
-        const savedProducts = localStorage.getItem('iraqi_products');
-        if(savedProducts) {
-            products = JSON.parse(savedProducts);
-        }
-        
-        // حفظ المنتجات عند التعديل
-        window.saveProducts = function() {
-            localStorage.setItem('iraqi_products', JSON.stringify(products));
-        };
-        
-        // بدء Ably
-        initAbly();
-    </script>
-</body>
-</html>
