@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>نظام مطعم عراقي | كاشير + مطبخ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Tahoma', 'Cairo', 'Amiri', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a050a 0%, #1a0f1a 100%);
+            min-height: 100vh;
+            padding: 15px;
+            position: relative;
+        }
+
+        /* Mode Selection Screen */
+        .mode-selection {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #0a050a, #1a0f1a);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.5s;
+        }
+
+        .mode-card {
+            background: linear-gradient(145deg, #1a101a, #0f080f);
+            border-radius: 40px;
+            padding: 30px;
+            text-align: center;
+            border: 2px solid #ff6b9d;
+            max-width: 320px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        .mode-card h2 {
+            color: #ff6b9d;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .mode-card p {
+            color: #b88cb8;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+        }
+
+        .mode-buttons {
+            display: flex;
+            gap: 15px;
+            flex-direction: column;
+        }
+
+        .mode-btn {
+            padding: 18px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .mode-cashier {
+            background: linear-gradient(135deg, #ff2d6d, #ff6b9d);
+            color: white;
+        }
+
+        .mode-kitchen {
+            background: linear-gradient(135deg, #2d1b2d, #4a1f3a);
+            color: #ff6b9d;
+            border: 2px solid #ff6b9d;
+        }
+
+        .mode-btn:active {
+            transform: scale(0.97);
+        }
+
+        /* App Container */
+        .app-container {
+            max-width: 550px;
+            margin: 0 auto;
+            background: linear-gradient(145deg, #0a050a 0%, #1a0f1a 100%);
+            border-radius: 35px;
+            overflow: hidden;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.5), 0 0 0 1px rgba(255, 107, 157, 0.2);
+            position: relative;
+            display: none;
+        }
+
+        .app-container.active {
+            display: block;
+            animation: slideUp 0.4s;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes bellRing {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(15deg); }
+            50% { transform: rotate(-15deg); }
+            75% { transform: rotate(5deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        .bell-animation {
+            animation: bellRing 0.5s ease-in-out;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #ff6b9d, #ff2d6d);
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.3);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        /* Kitchen Orders */
+        .kitchen-orders {
+            padding: 15px;
+        }
+
+        .order-card {
+            background: linear-gradient(145deg, #1a101a, #120b12);
+            border-radius: 25px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 107, 157, 0.3);
+            position: relative;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 107, 157, 0.2);
+        }
+
+        .order-number {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ff6b9d;
+        }
+
+        .order-time {
+            font-size: 0.7rem;
+            color: #8b6b8b;
+        }
+
+        .order-items {
+            margin: 12px 0;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            color: #ffd4e5;
+        }
+
+        .order-total {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 107, 157, 0.2);
+            font-weight: bold;
+            color: #ff6b9d;
+        }
+
+        .kitchen-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .btn-ready {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .btn-cancel-order {
+            background: #4a1f3a;
+            color: #ff6b9d;
+            border: 1px solid #ff6b9d;
+            padding: 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            flex: 0.5;
+        }
+
+        /* Ready Orders Section */
+        .ready-orders {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid rgba(255, 107, 157, 0.3);
+        }
+
+        .ready-title {
+            color: #ff6b9d;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+
+        .ready-card {
+            background: linear-gradient(145deg, #1f2a1f, #152015);
+            border-radius: 20px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #2ecc71;
+        }
+
+        /* Cashier Products Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            padding: 15px;
+            max-height: 45vh;
+            overflow-y: auto;
+        }
+
+        .product-card {
+            background: linear-gradient(145deg, #1a101a, #120b12);
+            border-radius: 20px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid rgba(255, 107, 157, 0.3);
+            transition: all 0.2s;
+        }
+
+        .product-card:active {
+            transform: scale(0.96);
+            background: #ff2d6d;
+        }
+
+        /* Cart */
+        .cart-section {
+            padding: 15px;
+            background: #0f080f;
+            border-radius: 25px;
+            margin: 15px;
+        }
+
+        .cart-item {
+            background: #1a101a;
+            border-radius: 15px;
+            padding: 10px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Notifications */
+        .notification-bell {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ff2d6d;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 45, 109, 0.5);
+            z-index: 100;
+        }
+
+        .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: white;
+            color: #ff2d6d;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: linear-gradient(135deg, #ff2d6d, #ff6b9d);
+            padding: 12px 20px;
+            border-radius: 50px;
+            color: white;
+            transition: transform 0.3s;
+            z-index: 1000;
+            white-space: nowrap;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Mode Selection -->
+    <div id="modeSelection" class="mode-selection">
+        <div class="mode-card">
+            <h2>🇮🇶 مرحبا بيك</h2>
+            <p>شنو دورك بالمطعم؟</p>
+            <div class="mode-buttons">
+                <button class="mode-btn mode-cashier" onclick="selectMode('cashier')">
+                    🧾 كاشير | أستقبال الطلبات
+                </button>
+                <button class="mode-btn mode-kitchen" onclick="selectMode('kitchen')">
+                    👨‍🍳 مطبخ | تجهيز الطلبات
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cashier App -->
+    <div id="cashierApp" class="app-container">
+        <div class="header">
+            <button class="back-btn" onclick="backToMode()">↺ رجوع</button>
+            <h1>🧾 كاشير | أستقبال الطلبات</h1>
+            <p style="font-size: 0.7rem;">🇮🇶 مطعم الحاج كاظم</p>
+        </div>
+
+        <div class="products-grid" id="productsGrid"></div>
+
+        <div class="cart-section">
+            <h3 style="color: #ff6b9d; margin-bottom: 10px;">🛒 الطلب الحالي</h3>
+            <div id="cashierCart"></div>
+            <div style="margin-top: 12px;">
+                <div style="display: flex; justify-content: space-between; margin: 8px 0;">
+                    <span>المجموع:</span>
+                    <span id="cashierSubtotal">0 د.ع</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin: 8px 0;">
+                    <span>الضريبة (15%):</span>
+                    <span id="cashierTax">0 د.ع</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin: 8px 0; font-size: 1.2rem; font-weight: bold; color: #ff6b9d;">
+                    <span>الإجمالي:</span>
+                    <span id="cashierTotal">0 د.ع</span>
+                </div>
+                <button class="btn-ready" onclick="sendOrderToKitchen()" style="width: 100%; margin-top: 10px; background: linear-gradient(135deg, #ff2d6d, #ff6b9d);">
+                    📤 أرسل الطلب للمطبخ
+                </button>
+                <button onclick="clearCashierCart()" style="width: 100%; margin-top: 8px; background: #4a1f3a; color: #ff6b9d; border: none; padding: 10px; border-radius: 20px;">
+                    🗑️ فريغ السلة
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kitchen App -->
+    <div id="kitchenApp" class="app-container">
+        <div class="header">
+            <button class="back-btn" onclick="backToMode()">↺ رجوع</button>
+            <h1>👨‍🍳 المطبخ | تجهيز الطلبات</h1>
+            <p style="font-size: 0.7rem;">الطلبات الجديدة تجي هنا</p>
+        </div>
+
+        <div class="kitchen-orders">
+            <h3 style="color: #ff6b9d; margin-bottom: 10px;">🆕 طلبات جديدة</h3>
+            <div id="newOrders"></div>
+
+            <div class="ready-orders">
+                <h3 class="ready-title">✅ طلبات جاهزة للتسليم</h3>
+                <div id="readyOrders"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // Data Storage
+        let orders = []; // { id, items, subtotal, tax, total, status, time, timestamp }
+        let currentCart = [];
+        let products = [];
+        let currentMode = null;
+        
+        let nextOrderNumber = 1;
+        
+        const TAX_RATE = 0.15;
+        
+        // Sound Functions
+        function playNewOrderSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                // Multiple beeps for new order
+                for(let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.frequency.value = 880 - (i * 100);
+                        gain.gain.value = 0.3;
+                        osc.start();
+                        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.2);
+                        osc.stop(audioCtx.currentTime + 0.2);
+                    }, i * 150);
+                }
+            } catch(e) {}
+        }
+        
+        function playReadySound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                // Bell sound for ready order
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.value = 1046.50;
+                gain.gain.value = 0.4;
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5);
+                osc.stop(audioCtx.currentTime + 0.5);
+                
+                setTimeout(() => {
+                    const osc2 = audioCtx.createOscillator();
+                    const gain2 = audioCtx.createGain();
+                    osc2.connect(gain2);
+                    gain2.connect(audioCtx.destination);
+                    osc2.frequency.value = 1318.51;
+                    gain2.gain.value = 0.4;
+                    osc2.start();
+                    gain2.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
+                    osc2.stop(audioCtx.currentTime + 0.3);
+                }, 200);
+            } catch(e) {}
+        }
+        
+        function playBellForCashier() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                // Ding Dong sound for cashier
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.value = 880;
+                gain.gain.value = 0.4;
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.4);
+                osc.stop(audioCtx.currentTime + 0.4);
+                
+                setTimeout(() => {
+                    const osc2 = audioCtx.createOscillator();
+                    const gain2 = audioCtx.createGain();
+                    osc2.connect(gain2);
+                    gain2.connect(audioCtx.destination);
+                    osc2.frequency.value = 660;
+                    gain2.gain.value = 0.4;
+                    osc2.start();
+                    gain2.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
+                    osc2.stop(audioCtx.currentTime + 0.3);
+                }, 200);
+                
+                // Visual bell animation
+                const bell = document.createElement('div');
+                bell.innerHTML = '🔔';
+                bell.style.position = 'fixed';
+                bell.style.top = '20px';
+                bell.style.right = '20px';
+                bell.style.fontSize = '40px';
+                bell.style.zIndex = '2000';
+                bell.style.animation = 'bellRing 0.5s';
+                document.body.appendChild(bell);
+                setTimeout(() => bell.remove(), 500);
+            } catch(e) {}
+        }
+        
+        // Load initial products
+        function loadProducts() {
+            const saved = localStorage.getItem('iraqi_products_v2');
+            if(saved) {
+                products = JSON.parse(saved);
+            } else {
+                products = [
+                    { id: 1, name: "تمن ومرق", price: 3500, emoji: "🍛" },
+                    { id: 2, name: "مسكوف", price: 12000, emoji: "🐟" },
+                    { id: 3, name: "دولمة", price: 8000, emoji: "🥬" },
+                    { id: 4, name: "قوزي", price: 15000, emoji: "🍖" },
+                    { id: 5, name: "كبة", price: 4000, emoji: "🥟" },
+                    { id: 6, name: "مقلوبة", price: 6000, emoji: "🍚" },
+                    { id: 7, name: "باقلاء", price: 3000, emoji: "🥣" },
+                    { id: 8, name: "چاي", price: 500, emoji: "🍵" }
+                ];
+                saveProducts();
+            }
+            
+            const savedOrders = localStorage.getItem('iraqi_orders');
+            if(savedOrders) {
+                orders = JSON.parse(savedOrders);
+                const maxNum = Math.max(...orders.map(o => o.orderNumber), 0);
+                nextOrderNumber = maxNum + 1;
+            }
+        }
+        
+        function saveProducts() {
+            localStorage.setItem('iraqi_products_v2', JSON.stringify(products));
+        }
+        
+        function saveOrders() {
+            localStorage.setItem('iraqi_orders', JSON.stringify(orders));
+        }
+        
+        // Display products for cashier
+        function displayProducts() {
+            const grid = document.getElementById('productsGrid');
+            if(!grid) return;
+            grid.innerHTML = products.map(p => `
+                <div class="product-card" onclick="addToCart(${p.id})">
+                    <div style="font-size: 1.8rem;">${p.emoji || '🍽️'}</div>
+                    <div style="font-size: 0.85rem; color: #ffd4e5;">${p.name}</div>
+                    <div style="color: #ff6b9d; font-weight: bold;">${p.price.toFixed(0)} د.ع</div>
+                </div>
+            `).join('');
+        }
+        
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if(!product) return;
+            
+            const existing = currentCart.find(i => i.id === productId);
+            if(existing) {
+                existing.quantity++;
+            } else {
+                currentCart.push({...product, quantity: 1});
+            }
+            updateCashierCart();
+        }
+        
+        function updateCashierCart() {
+            const container = document.getElementById('cashierCart');
+            if(!container) return;
+            
+            if(currentCart.length === 0) {
+                container.innerHTML = '<div style="color: #8b6b8b; text-align: center;">السلة فاضية</div>';
+                updateCashierSummary();
+                return;
+            }
+            
+            container.innerHTML = currentCart.map((item, idx) => `
+                <div class="cart-item">
+                    <div style="font-size: 1.2rem;">${item.emoji || '🍽️'}</div>
+                    <div style="flex: 1;">
+                        <div style="color: #ffd4e5;">${item.name}</div>
+                        <div style="color: #ff6b9d; font-size: 0.7rem;">${item.price} د.ع</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <button onclick="updateQty(${idx}, -1)" style="background: #2d1b2d; border: none; color: #ff6b9d; width: 28px; height: 28px; border-radius: 10px;">-</button>
+                        <span style="color: white;">${item.quantity}</span>
+                        <button onclick="updateQty(${idx}, 1)" style="background: #2d1b2d; border: none; color: #ff6b9d; width: 28px; height: 28px; border-radius: 10px;">+</button>
+                    </div>
+                </div>
+            `).join('');
+            updateCashierSummary();
+        }
+        
+        function updateQty(index, change) {
+            if(index >= 0 && index < currentCart.length) {
+                const newQty = currentCart[index].quantity + change;
+                if(newQty <= 0) {
+                    currentCart.splice(index, 1);
+                } else {
+                    currentCart[index].quantity = newQty;
+                }
+                updateCashierCart();
+            }
+        }
+        
+        function updateCashierSummary() {
+            const subtotal = currentCart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+            const tax = subtotal * TAX_RATE;
+            const total = subtotal + tax;
+            document.getElementById('cashierSubtotal').innerHTML = `${subtotal.toFixed(0)} د.ع`;
+            document.getElementById('cashierTax').innerHTML = `${tax.toFixed(0)} د.ع`;
+            document.getElementById('cashierTotal').innerHTML = `${total.toFixed(0)} د.ع`;
+        }
+        
+        function clearCashierCart() {
+            if(currentCart.length > 0 && confirm('تريد تفريغ السلة؟')) {
+                currentCart = [];
+                updateCashierCart();
+                showToast('🗑️ السلة فريغت', '#ff6b9d');
+            }
+        }
+        
+        function sendOrderToKitchen() {
+            if(currentCart.length === 0) {
+                showToast('⚠️ السلة فاضية! أضف أكلات', '#ff6b9d');
+                return;
+            }
+            
+            const subtotal = currentCart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+            const tax = subtotal * TAX_RATE;
+            const total = subtotal + tax;
+            
+            const newOrder = {
+                id: Date.now(),
+                orderNumber: nextOrderNumber++,
+                items: [...currentCart],
+                subtotal: subtotal,
+                tax: tax,
+                total: total,
+                status: 'new', // new, ready, completed
+                time: new Date().toLocaleTimeString('ar-IQ'),
+                timestamp: Date.now()
+            };
+            
+            orders.push(newOrder);
+            saveOrders();
+            
+            // Play sound in kitchen
+            playNewOrderSound();
+            
+            showToast(`✅ تم إرسال الطلب رقم ${newOrder.orderNumber} للمطبخ!`, '#27ae60');
+            
+            // Clear cart
+            currentCart = [];
+            updateCashierCart();
+            
+            // If kitchen is open, refresh it
+            if(currentMode === 'kitchen') {
+                refreshKitchenView();
+            }
+        }
+        
+        function refreshKitchenView() {
+            const newOrdersDiv = document.getElementById('newOrders');
+            const readyOrdersDiv = document.getElementById('readyOrders');
+            
+            if(!newOrdersDiv) return;
+            
+            const newOrders = orders.filter(o => o.status === 'new');
+            const readyOrders = orders.filter(o => o.status === 'ready');
+            
+            if(newOrders.length === 0) {
+                newOrdersDiv.innerHTML = '<div style="color: #8b6b8b; text-align: center; padding: 20px;">ماكو طلبات جديدة</div>';
+            } else {
+                newOrdersDiv.innerHTML = newOrders.map(order => `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span class="order-number">طلب #${order.orderNumber}</span>
+                            <span class="order-time">${order.time}</span>
+                        </div>
+                        <div class="order-items">
+                            ${order.items.map(item => `
+                                <div class="order-item">
+                                    <span>${item.emoji} ${item.name}</span>
+                                    <span>${item.quantity} × ${item.price.toFixed(0)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="order-total">
+                            الإجمالي: ${order.total.toFixed(0)} د.ع
+                        </div>
+                        <div class="kitchen-actions">
+                            <button class="btn-ready" onclick="markOrderReady(${order.id})">✅ جهز الطلب</button>
+                            <button class="btn-cancel-order" onclick="cancelOrder(${order.id})">🗑️ إلغاء</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            if(readyOrders.length === 0) {
+                readyOrdersDiv.innerHTML = '<div style="color: #8b6b8b; text-align: center; padding: 20px;">ماكو طلبات جاهزة</div>';
+            } else {
+                readyOrdersDiv.innerHTML = readyOrders.map(order => `
+                    <div class="ready-card">
+                        <div class="order-header">
+                            <span class="order-number">طلب #${order.orderNumber}</span>
+                            <span class="order-time">${order.time}</span>
+                        </div>
+                        <div class="order-items">
+                            ${order.items.map(item => `
+                                <div class="order-item">
+                                    <span>${item.emoji} ${item.name} x${item.quantity}</span>
+                                    <span>${(item.price * item.quantity).toFixed(0)} د.ع</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="order-total">
+                            الإجمالي: ${order.total.toFixed(0)} د.ع
+                        </div>
+                        <button class="btn-ready" onclick="completeOrder(${order.id})" style="margin-top: 10px; background: #ff2d6d;">
+                            🛎️ تسليم للزبون + جرس للكاشير
+                        </button>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        function markOrderReady(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if(order) {
+                order.status = 'ready';
+                saveOrders();
+                refreshKitchenView();
+                showToast(`✅ الطلب #${order.orderNumber} جاهز!`, '#27ae60');
+            }
+        }
+        
+        function completeOrder(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if(order) {
+                orders = orders.filter(o => o.id !== orderId);
+                saveOrders();
+                refreshKitchenView();
+                
+                // Play bell sound for cashier
+                playBellForCashier();
+                
+                showToast(`🛎️ الطلب #${order.orderNumber} تم تسليمه! جرس راح للكاشير`, '#ff6b9d');
+            }
+        }
+        
+        function cancelOrder(orderId) {
+            if(confirm('تريد تلغي الطلب؟')) {
+                orders = orders.filter(o => o.id !== orderId);
+                saveOrders();
+                refreshKitchenView();
+                showToast(`🗑️ تم إلغاء الطلب`, '#e74c3c');
+            }
+        }
+        
+        function selectMode(mode) {
+            currentMode = mode;
+            document.getElementById('modeSelection').style.display = 'none';
+            
+            if(mode === 'cashier') {
+                document.getElementById('cashierApp').classList.add('active');
+                displayProducts();
+                updateCashierCart();
+            } else {
+                document.getElementById('kitchenApp').classList.add('active');
+                refreshKitchenView();
+            }
+        }
+        
+        function backToMode() {
+            document.getElementById('cashierApp').classList.remove('active');
+            document.getElementById('kitchenApp').classList.remove('active');
+            document.getElementById('modeSelection').style.display = 'flex';
+            currentMode = null;
+        }
+        
+        function showToast(msg, color) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.style.background = `linear-gradient(135deg, ${color}, ${color}dd)`;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+        
+        // Auto refresh kitchen view every 2 seconds
+        setInterval(() => {
+            if(currentMode === 'kitchen') {
+                refreshKitchenView();
+            }
+        }, 2000);
+        
+        // Initial load
+        loadProducts();
+    </script>
+</body>
+  </html>
