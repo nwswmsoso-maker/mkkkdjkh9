@@ -43,18 +43,19 @@
             max-width: 340px;
             width: 90%;
             box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            animation: fadeInUp 0.5s ease;
         }
 
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .restaurant-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ff6b9d, #ff2d6d);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px auto;
+            font-size: 2.5rem;
+            box-shadow: 0 5px 20px rgba(255, 45, 109, 0.3);
         }
 
         .restaurant-name {
@@ -64,7 +65,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .mode-card h2 {
@@ -135,18 +136,21 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes bellRing {
-            0% { transform: rotate(0deg) scale(1); }
-            25% { transform: rotate(20deg) scale(1.1); }
-            50% { transform: rotate(-20deg) scale(1.1); }
-            75% { transform: rotate(10deg) scale(1.05); }
-            100% { transform: rotate(0deg) scale(1); }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -100%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
         }
 
-        @keyframes shake {
-            0%,100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
+        @keyframes checkBounce {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
         }
 
         .header {
@@ -424,6 +428,44 @@
             font-size: 0.8rem;
         }
 
+        /* إشعار التسليم الأنيق */
+        .delivery-notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100%);
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 2000;
+            box-shadow: 0 10px 30px rgba(39, 174, 96, 0.4);
+            font-weight: bold;
+            font-size: 1rem;
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .delivery-notification.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .delivery-notification .check-icon {
+            width: 30px;
+            height: 30px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #27ae60;
+            font-size: 1.2rem;
+            font-weight: bold;
+            animation: checkBounce 0.4s ease;
+        }
+
         .toast {
             position: fixed;
             bottom: 20px;
@@ -444,23 +486,6 @@
 
         .toast.show {
             transform: translateX(-50%) translateY(0);
-        }
-
-        .floating-bell {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #ff2d6d;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            animation: bellRing 0.5s;
-            z-index: 100;
-            box-shadow: 0 5px 20px rgba(255, 45, 109, 0.5);
         }
 
         .kitchen-orders, .ready-section {
@@ -491,8 +516,11 @@
 <!-- شاشة اختيار الدور -->
 <div id="modeSelection" class="mode-selection">
     <div class="mode-card">
+        <div class="restaurant-logo">
+            🍽️
+        </div>
         <div class="restaurant-name">
-            <span>🍽️</span> مطعم البانيو <span>🇮🇶</span>
+            مطعم البانيو <span>🇮🇶</span>
         </div>
         <h2>مرحباً بك</h2>
         <p>شنو دورك بالمطعم؟</p>
@@ -584,42 +612,18 @@ function formatNumber(num) {
     return formatted.replace(/[0-9,]/g, m => arabic[m] || m) + ' د.ع';
 }
 
-// ============= الأصوات =============
-function playClick() {
-    try {
-        let ctx = new (AudioContext || webkitAudioContext)();
-        let osc = ctx.createOscillator();
-        let gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.frequency.value = 600;
-        gain.gain.value = 0.1;
-        osc.start();
-        gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.08);
-        osc.stop(ctx.currentTime + 0.08);
-    } catch(e) { console.log("صوت غير مدعوم"); }
-}
-
-function playNewOrderSound() {
-    try {
-        let ctx = new (AudioContext || webkitAudioContext)();
-        for(let i = 0; i < 2; i++) {
-            setTimeout(() => {
-                let osc = ctx.createOscillator();
-                let gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.frequency.value = 880 - (i * 100);
-                gain.gain.value = 0.3;
-                osc.start();
-                gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.2);
-                osc.stop(ctx.currentTime + 0.2);
-            }, i * 120);
-        }
-    } catch(e) {}
-}
-
-function playBellSound() {
+// ============= إشعار تسليم أنيق =============
+function showDeliveryNotification(orderNumber, tableNumber) {
+    // إنشاء عنصر الإشعار
+    let notification = document.createElement('div');
+    notification.className = 'delivery-notification';
+    notification.innerHTML = `
+        <div class="check-icon">✓</div>
+        <div>✅ تم تسليم الطلب #${orderNumber} لطاولة ${tableNumber}</div>
+    `;
+    document.body.appendChild(notification);
+    
+    // تشغيل الصوت
     try {
         let ctx = new (AudioContext || webkitAudioContext)();
         let osc = ctx.createOscillator();
@@ -627,7 +631,7 @@ function playBellSound() {
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.frequency.value = 880;
-        gain.gain.value = 0.4;
+        gain.gain.value = 0.2;
         osc.start();
         gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.3);
         osc.stop(ctx.currentTime + 0.3);
@@ -638,18 +642,21 @@ function playBellSound() {
             osc2.connect(gain2);
             gain2.connect(ctx.destination);
             osc2.frequency.value = 660;
-            gain2.gain.value = 0.35;
+            gain2.gain.value = 0.2;
             osc2.start();
             gain2.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.25);
             osc2.stop(ctx.currentTime + 0.25);
-        }, 150);
-        
-        let bell = document.createElement('div');
-        bell.className = 'floating-bell';
-        bell.innerHTML = '🔔';
-        document.body.appendChild(bell);
-        setTimeout(() => bell.remove(), 600);
+        }, 200);
     } catch(e) {}
+    
+    // إظهار الإشعار
+    setTimeout(() => notification.classList.add('show'), 10);
+    
+    // إخفاء الإشعار بعد 3 ثواني
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
 }
 
 function showToast(msg) {
@@ -692,7 +699,6 @@ function initAbly() {
                 allOrders.unshift(order);
                 saveData();
                 refreshKitchen();
-                playNewOrderSound();
                 showToast(`🔔 طلب جديد #${order.orderNumber} - طاولة ${order.tableNumber}`);
             }
         });
@@ -718,8 +724,7 @@ function initAbly() {
                     time: data.time
                 });
                 updateCashierReady();
-                playBellSound();
-                showToast(`🔔🔔 طلب #${data.orderNumber} - طاولة ${data.tableNumber} جاهز!`);
+                showToast(`🔔 طلب #${data.orderNumber} - طاولة ${data.tableNumber} جاهز!`);
             }
         });
         
@@ -733,7 +738,6 @@ function initAbly() {
             if(currentMode === 'cashier') {
                 cashierReadyOrders = cashierReadyOrders.filter(o => o.id !== data.id);
                 updateCashierReady();
-                showToast(`✅ تم تسليم الطلب #${data.orderNumber}`);
             }
         });
     } catch(e) {
@@ -754,7 +758,6 @@ function createTableButtons() {
 }
 
 function selectTable(n) {
-    playClick();
     selectedTable = n;
     createTableButtons();
     document.getElementById('selectedTableLabel').innerText = n.toString().replace(/[0-9]/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
@@ -773,7 +776,6 @@ function displayProducts() {
 }
 
 function addToCart(id) {
-    playClick();
     let product = products.find(p => p.id === id);
     if(!product) return;
     let existing = currentCart.find(i => i.id === id);
@@ -808,7 +810,6 @@ function updateCart() {
 }
 
 function updateQty(idx, change) {
-    playClick();
     if(idx >= 0 && idx < currentCart.length) {
         let newQty = currentCart[idx].quantity + change;
         if(newQty <= 0) currentCart.splice(idx, 1);
@@ -828,7 +829,6 @@ function updateSummary() {
 
 function clearCashierCart() {
     if(currentCart.length > 0 && confirm('تريد تفريغ السلة؟')) {
-        playClick();
         currentCart = [];
         updateCart();
         showToast('🗑️ السلة فريغت');
@@ -844,7 +844,6 @@ function sendOrderToKitchen() {
         showToast('❌ مشكلة بالاتصال');
         return;
     }
-    playClick();
     let sub = currentCart.reduce((s, i) => s + (i.price * i.quantity), 0);
     let tax = sub * TAX_RATE;
     let total = sub + tax;
@@ -891,19 +890,18 @@ function updateCashierReady() {
                 `).join('')}
             </div>
             <div class="order-total">الإجمالي: ${formatNumber(order.total)}</div>
-            <button class="btn-action btn-deliver" onclick="completeOrder(${order.id}, ${order.orderNumber})" style="margin-top:8px">🛎️ تم تسليم الطلب</button>
+            <button class="btn-action btn-deliver" onclick="completeOrder(${order.id}, ${order.orderNumber}, ${order.tableNumber})" style="margin-top:8px">🛎️ تم تسليم الطلب</button>
         </div>
     `).join('');
 }
 
-function completeOrder(id, num) {
-    if(confirm(`تأكيد تسليم الطلب #${num} للزبون؟`)) {
-        playClick();
-        cashierReadyOrders = cashierReadyOrders.filter(o => o.id !== id);
-        updateCashierReady();
-        if(channel) channel.publish("order-completed", { id: id, orderNumber: num });
-        showToast(`✅ تم تسليم الطلب #${num}`);
-    }
+function completeOrder(id, num, table) {
+    // إظهار الإشعار الأنيق مع الصوت
+    showDeliveryNotification(num, table);
+    
+    cashierReadyOrders = cashierReadyOrders.filter(o => o.id !== id);
+    updateCashierReady();
+    if(channel) channel.publish("order-completed", { id: id, orderNumber: num });
 }
 
 // ============= المطبخ =============
@@ -985,13 +983,11 @@ function markReady(id) {
 }
 
 function deliverOrder(id, num, table) {
-    if(confirm(`تأكيد تسليم الطلب #${num} لطاولة ${table}؟`)) {
-        allOrders = allOrders.filter(o => o.id !== id);
-        saveData();
-        refreshKitchen();
-        if(channel) channel.publish("order-completed", { id: id, orderNumber: num });
-        showToast(`✅ تم تسليم الطلب #${num}`);
-    }
+    allOrders = allOrders.filter(o => o.id !== id);
+    saveData();
+    refreshKitchen();
+    if(channel) channel.publish("order-completed", { id: id, orderNumber: num });
+    showToast(`✅ تم تسليم الطلب #${num}`);
 }
 
 // ============= التحكم =============
