@@ -3,76 +3,498 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>نظام مطعم عراقي | كاشير + مطبخ</title>
+    <title>مطعم البانيو | نظام كاشير ومطبخ</title>
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
     <style>
-        *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI','Cairo',sans-serif;-webkit-tap-highlight-color:transparent}
-        body{background:linear-gradient(135deg,#0a050a,#1a0f1a);min-height:100vh;padding:12px}
-        .mode-selection{position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#0a050a,#1a0f1a);z-index:2000;display:flex;align-items:center;justify-content:center}
-        .mode-card{background:linear-gradient(145deg,#1a101a,#0f080f);border-radius:40px;padding:30px;text-align:center;border:2px solid #ff6b9d;max-width:320px;width:90%}
-        .mode-card h2{color:#ff6b9d;margin-bottom:10px}
-        .mode-card p{color:#b88cb8;margin-bottom:20px}
-        .mode-buttons{display:flex;gap:15px;flex-direction:column}
-        .mode-btn{padding:18px;border:none;border-radius:25px;font-size:1.1rem;font-weight:bold;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:transform 0.05s}
-        .mode-btn:active{transform:scale(0.97)}
-        .mode-cashier{background:linear-gradient(135deg,#ff2d6d,#ff6b9d);color:white}
-        .mode-kitchen{background:#2d1b2d;color:#ff6b9d;border:2px solid #ff6b9d}
-        .app-container{max-width:550px;margin:0 auto;background:linear-gradient(145deg,#0a050a,#1a0f1a);border-radius:35px;overflow:hidden;border:1px solid rgba(255,107,157,0.2);display:none}
-        .app-container.active{display:block;animation:fadeIn 0.2s}
-        @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes bellRing{0%{transform:rotate(0)}25%{transform:rotate(15deg)}50%{transform:rotate(-15deg)}75%{transform:rotate(5deg)}100%{transform:rotate(0)}}
-        .header{background:linear-gradient(135deg,#ff6b9d,#ff2d6d);padding:20px;text-align:center;position:relative}
-        .header h1{font-size:1.4rem;display:flex;align-items:center;justify-content:center;gap:8px}
-        .header p{font-size:0.7rem;opacity:0.9;margin-top:5px}
-        .back-btn{position:absolute;left:15px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.3);border:none;color:white;padding:6px 12px;border-radius:20px;cursor:pointer;font-size:0.7rem}
-        .connection-status{position:absolute;right:15px;top:50%;transform:translateY(-50%);width:10px;height:10px;border-radius:50%;background:#e74c3c}
-        .products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;padding:15px;max-height:40vh;overflow-y:auto}
-        .product-card{background:linear-gradient(145deg,#1a101a,#120b12);border-radius:20px;padding:12px;text-align:center;cursor:pointer;border:1px solid rgba(255,107,157,0.3);transition:transform 0.05s}
-        .product-card:active{transform:scale(0.96)}
-        .product-emoji{font-size:1.8rem}
-        .product-name{color:#ffd4e5;font-size:0.85rem;margin:5px 0}
-        .product-price{color:#ff6b9d;font-weight:bold}
-        .table-selector{background:linear-gradient(145deg,#1a101a,#120b12);margin:15px;padding:12px;border-radius:25px;border:1px solid rgba(255,107,157,0.3)}
-        .table-selector label{color:#ff6b9d;display:block;margin-bottom:8px}
-        .table-buttons{display:flex;flex-wrap:wrap;gap:8px}
-        .table-btn{background:#2d1b2d;border:1px solid #ff6b9d;color:#ff6b9d;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:0.8rem;transition:transform 0.05s}
-        .table-btn:active{transform:scale(0.94)}
-        .table-btn.active{background:linear-gradient(135deg,#ff2d6d,#ff6b9d);color:white;border:none}
-        .cart-section{padding:15px;background:#0f080f;margin:15px;border-radius:25px}
-        .cart-item{background:#1a101a;border-radius:15px;padding:10px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
-        .qty-btn{background:#2d1b2d;border:none;color:#ff6b9d;width:32px;height:32px;border-radius:12px;font-size:1.1rem;cursor:pointer;transition:transform 0.05s}
-        .qty-btn:active{transform:scale(0.92)}
-        .btn-ready,.btn-complete,.btn-clear{border:none;padding:12px;border-radius:20px;cursor:pointer;font-weight:bold;width:100%;margin-top:8px;transition:transform 0.05s}
-        .btn-ready:active,.btn-complete:active,.btn-clear:active{transform:scale(0.97)}
-        .btn-ready{background:linear-gradient(135deg,#27ae60,#2ecc71);color:white}
-        .btn-complete{background:linear-gradient(135deg,#ff2d6d,#ff6b9d);color:white}
-        .btn-clear{background:#4a1f3a;color:#ff6b9d;border:1px solid #ff6b9d}
-        .order-card{background:linear-gradient(145deg,#1a101a,#120b12);border-radius:25px;padding:15px;margin-bottom:15px;border:1px solid rgba(255,107,157,0.3)}
-        .new-order-card{border-right:4px solid #ff2d6d}
-        .ready-order-card{border-right:4px solid #2ecc71;background:linear-gradient(145deg,#1a2a1a,#0f1a0f)}
-        .order-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,107,157,0.2);flex-wrap:wrap;gap:8px}
-        .order-number{font-size:1.1rem;font-weight:bold;color:#ff6b9d}
-        .table-number{background:#ff2d6d;padding:4px 10px;border-radius:20px;font-size:0.7rem;color:white}
-        .order-time{font-size:0.65rem;color:#8b6b8b}
-        .order-item{display:flex;justify-content:space-between;padding:5px 0;color:#ffd4e5;font-size:0.85rem}
-        .order-total{margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,107,157,0.2);font-weight:bold;color:#ff6b9d}
-        .cashier-ready-orders{background:#0f080f;margin:15px;padding:15px;border-radius:25px;max-height:35vh;overflow-y:auto}
-        .ready-order-card-cashier{background:linear-gradient(145deg,#1a2a1a,#0f1a0f);border-radius:20px;padding:12px;margin-bottom:10px;border:1px solid #2ecc71}
-        .empty-state{text-align:center;padding:30px;color:#8b6b8b}
-        .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(100px);background:linear-gradient(135deg,#ff2d6d,#ff6b9d);padding:10px 20px;border-radius:50px;color:white;transition:transform 0.2s;z-index:1000;text-align:center;font-weight:bold;font-size:0.85rem;white-space:nowrap;max-width:90%}
-        .toast.show{transform:translateX(-50%) translateY(0)}
-        .floating-bell{position:fixed;bottom:20px;right:20px;background:#ff2d6d;width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;animation:bellRing 0.5s;z-index:100}
-        .kitchen-orders,.ready-section{padding:15px}
-        .section-title{color:#ff6b9d;margin-bottom:12px;font-size:1rem;display:flex;align-items:center;gap:8px}
-        ::-webkit-scrollbar{width:3px}
-        ::-webkit-scrollbar-track{background:#1a101a}
-        ::-webkit-scrollbar-thumb{background:#ff6b9d;border-radius:10px}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Cairo', 'Tahoma', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a050a 0%, #1a0f1a 100%);
+            min-height: 100vh;
+            padding: 12px;
+        }
+
+        /* شاشة اختيار الدور */
+        .mode-selection {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #0a050a, #1a0f1a);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mode-card {
+            background: linear-gradient(145deg, #1a101a, #0f080f);
+            border-radius: 50px;
+            padding: 35px 25px;
+            text-align: center;
+            border: 2px solid #ff6b9d;
+            max-width: 340px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .restaurant-name {
+            font-size: 1.8rem;
+            color: #ff6b9d;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .mode-card h2 {
+            color: #ff6b9d;
+            margin-bottom: 8px;
+            font-size: 1.2rem;
+        }
+
+        .mode-card p {
+            color: #b88cb8;
+            margin-bottom: 25px;
+            font-size: 0.85rem;
+        }
+
+        .mode-buttons {
+            display: flex;
+            gap: 15px;
+            flex-direction: column;
+        }
+
+        .mode-btn {
+            padding: 16px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .mode-btn:active {
+            transform: scale(0.97);
+        }
+
+        .mode-cashier {
+            background: linear-gradient(135deg, #ff2d6d, #ff6b9d);
+            color: white;
+        }
+
+        .mode-kitchen {
+            background: linear-gradient(135deg, #2d1b2d, #3a1f3a);
+            color: #ff6b9d;
+            border: 2px solid #ff6b9d;
+        }
+
+        /* التطبيقات */
+        .app-container {
+            max-width: 550px;
+            margin: 0 auto;
+            background: linear-gradient(145deg, #0a050a, #1a0f1a);
+            border-radius: 35px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 107, 157, 0.2);
+            display: none;
+        }
+
+        .app-container.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes bellRing {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(20deg) scale(1.1); }
+            50% { transform: rotate(-20deg) scale(1.1); }
+            75% { transform: rotate(10deg) scale(1.05); }
+            100% { transform: rotate(0deg) scale(1); }
+        }
+
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b9d, #ff2d6d);
+            padding: 18px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .header p {
+            font-size: 0.65rem;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.3);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+
+        .connection-status {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #e74c3c;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+            padding: 12px;
+            max-height: 38vh;
+            overflow-y: auto;
+        }
+
+        .product-card {
+            background: linear-gradient(145deg, #1a101a, #120b12);
+            border-radius: 20px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid rgba(255, 107, 157, 0.3);
+            transition: all 0.05s linear;
+        }
+
+        .product-card:active {
+            transform: scale(0.95);
+            background: #ff2d6d;
+        }
+
+        .product-emoji {
+            font-size: 1.5rem;
+        }
+
+        .product-name {
+            color: #ffd4e5;
+            font-size: 0.75rem;
+            margin: 4px 0;
+        }
+
+        .product-price {
+            color: #ff6b9d;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        .table-selector {
+            background: linear-gradient(145deg, #1a101a, #120b12);
+            margin: 12px;
+            padding: 10px;
+            border-radius: 25px;
+            border: 1px solid rgba(255, 107, 157, 0.3);
+        }
+
+        .table-selector label {
+            color: #ff6b9d;
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.8rem;
+        }
+
+        .table-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .table-btn {
+            background: #2d1b2d;
+            border: 1px solid #ff6b9d;
+            color: #ff6b9d;
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+
+        .table-btn.active {
+            background: linear-gradient(135deg, #ff2d6d, #ff6b9d);
+            color: white;
+            border: none;
+        }
+
+        .cart-section {
+            padding: 12px;
+            background: #0f080f;
+            margin: 12px;
+            border-radius: 25px;
+        }
+
+        .cart-item {
+            background: #1a101a;
+            border-radius: 15px;
+            padding: 8px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .qty-btn {
+            background: #2d1b2d;
+            border: none;
+            color: #ff6b9d;
+            width: 28px;
+            height: 28px;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .btn-action {
+            border: none;
+            padding: 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 6px;
+            transition: all 0.05s linear;
+        }
+
+        .btn-action:active {
+            transform: scale(0.97);
+        }
+
+        .btn-send {
+            background: linear-gradient(135deg, #ff2d6d, #ff6b9d);
+            color: white;
+        }
+
+        .btn-clear {
+            background: #4a1f3a;
+            color: #ff6b9d;
+            border: 1px solid #ff6b9d;
+        }
+
+        .btn-ready {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+        }
+
+        .btn-deliver {
+            background: linear-gradient(135deg, #ff2d6d, #ff6b9d);
+            color: white;
+        }
+
+        .order-card {
+            background: linear-gradient(145deg, #1a101a, #120b12);
+            border-radius: 20px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255, 107, 157, 0.3);
+        }
+
+        .new-order-card {
+            border-right: 3px solid #ff2d6d;
+        }
+
+        .ready-order-card {
+            border-right: 3px solid #2ecc71;
+            background: linear-gradient(145deg, #1a2a1a, #0f1a0f);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(255, 107, 157, 0.2);
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .order-number {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #ff6b9d;
+        }
+
+        .table-badge {
+            background: #ff2d6d;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            color: white;
+        }
+
+        .order-time {
+            font-size: 0.6rem;
+            color: #8b6b8b;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            color: #ffd4e5;
+            font-size: 0.75rem;
+        }
+
+        .order-total {
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(255, 107, 157, 0.2);
+            font-weight: bold;
+            color: #ff6b9d;
+            font-size: 0.85rem;
+        }
+
+        .cashier-ready-orders {
+            background: #0f080f;
+            margin: 12px;
+            padding: 12px;
+            border-radius: 25px;
+            max-height: 32vh;
+            overflow-y: auto;
+        }
+
+        .ready-card {
+            background: linear-gradient(145deg, #1a2a1a, #0f1a0f);
+            border-radius: 18px;
+            padding: 10px;
+            margin-bottom: 8px;
+            border: 1px solid #2ecc71;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 25px;
+            color: #8b6b8b;
+            font-size: 0.8rem;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: linear-gradient(135deg, #ff2d6d, #ff6b9d);
+            padding: 8px 18px;
+            border-radius: 40px;
+            color: white;
+            transition: transform 0.2s;
+            z-index: 1000;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            max-width: 90%;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .floating-bell {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #ff2d6d;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            animation: bellRing 0.5s;
+            z-index: 100;
+            box-shadow: 0 5px 20px rgba(255, 45, 109, 0.5);
+        }
+
+        .kitchen-orders, .ready-section {
+            padding: 12px;
+        }
+
+        .section-title {
+            color: #ff6b9d;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 3px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a101a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ff6b9d;
+        }
     </style>
 </head>
 <body>
+<!-- شاشة اختيار الدور -->
 <div id="modeSelection" class="mode-selection">
     <div class="mode-card">
-        <h2>🇮🇶 مرحبا بيك</h2>
+        <div class="restaurant-name">
+            <span>🍽️</span> مطعم البانيو <span>🇮🇶</span>
+        </div>
+        <h2>مرحباً بك</h2>
         <p>شنو دورك بالمطعم؟</p>
         <div class="mode-buttons">
             <button class="mode-btn mode-cashier" onclick="selectMode('cashier')">🧾 كاشير | أستقبال الطلبات</button>
@@ -81,11 +503,12 @@
     </div>
 </div>
 
+<!-- تطبيق الكاشير -->
 <div id="cashierApp" class="app-container">
     <div class="header">
         <button class="back-btn" onclick="backToMode()">↺ رجوع</button>
         <h1>🧾 كاشير | أستقبال الطلبات</h1>
-        <p>🇮🇶 مطعم الحاج كاظم - بغداد</p>
+        <p>🇮🇶 مطعم البانيو - بغداد</p>
         <div class="connection-status" id="cashierStatus"></div>
     </div>
     <div class="table-selector">
@@ -94,22 +517,23 @@
     </div>
     <div class="products-grid" id="productsGrid"></div>
     <div class="cart-section">
-        <h3 style="color:#ff6b9d;margin-bottom:10px">🛒 الطلب الحالي - طاولة <span id="selectedTableLabel">١</span></h3>
+        <h3 style="color:#ff6b9d;margin-bottom:8px;font-size:0.9rem">🛒 الطلب الحالي - طاولة <span id="selectedTableLabel">١</span></h3>
         <div id="cashierCart"></div>
-        <div style="margin-top:12px">
-            <div style="display:flex;justify-content:space-between;margin:6px 0"><span>المجموع:</span><span id="cashierSubtotal" style="font-weight:bold">٠ د.ع</span></div>
-            <div style="display:flex;justify-content:space-between;margin:6px 0"><span>الضريبة (15%):</span><span id="cashierTax">٠ د.ع</span></div>
-            <div style="display:flex;justify-content:space-between;margin:8px 0;font-size:1.2rem;font-weight:bold;color:#ff6b9d"><span>الإجمالي:</span><span id="cashierTotal">٠ د.ع</span></div>
-            <button class="btn-ready" onclick="sendOrderToKitchen()" style="background:linear-gradient(135deg,#ff2d6d,#ff6b9d)">📤 أرسل الطلب للمطبخ</button>
-            <button class="btn-clear" onclick="clearCashierCart()">🗑️ فريغ السلة</button>
+        <div style="margin-top:10px">
+            <div style="display:flex;justify-content:space-between;margin:4px 0;font-size:0.8rem"><span>المجموع:</span><span id="cashierSubtotal">٠ د.ع</span></div>
+            <div style="display:flex;justify-content:space-between;margin:4px 0;font-size:0.8rem"><span>الضريبة (15%):</span><span id="cashierTax">٠ د.ع</span></div>
+            <div style="display:flex;justify-content:space-between;margin:6px 0;font-size:1rem;font-weight:bold;color:#ff6b9d"><span>الإجمالي:</span><span id="cashierTotal">٠ د.ع</span></div>
+            <button class="btn-action btn-send" onclick="sendOrderToKitchen()">📤 أرسل الطلب للمطبخ</button>
+            <button class="btn-action btn-clear" onclick="clearCashierCart()">🗑️ فريغ السلة</button>
         </div>
     </div>
     <div class="cashier-ready-orders">
-        <h3 style="color:#2ecc71;margin-bottom:12px">✅ طلبات جاهزة للتسليم</h3>
+        <h3 style="color:#2ecc71;margin-bottom:8px;font-size:0.9rem">✅ طلبات جاهزة للتسليم</h3>
         <div id="cashierReadyOrders"></div>
     </div>
 </div>
 
+<!-- تطبيق المطبخ -->
 <div id="kitchenApp" class="app-container">
     <div class="header">
         <button class="back-btn" onclick="backToMode()">↺ رجوع</button>
@@ -129,7 +553,7 @@
 <div id="toast" class="toast"></div>
 
 <script>
-// ============= إعدادات Ably =============
+// ============= إعدادات =============
 const ABLY_API_KEY = "Rb_5bw.uuY0Fg:xiw6RyPqBY6CAm7N69a60R4KNogO0QLPzuROjFPs0f4";
 let ably = null, channel = null, currentMode = null;
 let allOrders = [], currentCart = [], selectedTable = 1, nextOrderNumber = 1, cashierReadyOrders = [];
@@ -152,7 +576,9 @@ let products = [
 function formatNumber(num) {
     let str = Math.round(num).toString();
     let parts = [];
-    for(let i = str.length; i > 0; i -= 3) parts.unshift(str.substring(Math.max(0, i-3), i));
+    for(let i = str.length; i > 0; i -= 3) {
+        parts.unshift(str.substring(Math.max(0, i-3), i));
+    }
     let formatted = parts.join(',');
     let arabic = {'0':'٠','1':'١','2':'٢','3':'٣','4':'٤','5':'٥','6':'٦','7':'٧','8':'٨','9':'٩',',':'،'};
     return formatted.replace(/[0-9,]/g, m => arabic[m] || m) + ' د.ع';
@@ -166,15 +592,15 @@ function playClick() {
         let gain = ctx.createGain();
         osc.connect(gain);
         gain.connect(ctx.destination);
-        osc.frequency.value = 800;
-        gain.gain.value = 0.08;
+        osc.frequency.value = 600;
+        gain.gain.value = 0.1;
         osc.start();
-        gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.05);
-        osc.stop(ctx.currentTime + 0.05);
-    } catch(e) {}
+        gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.08);
+        osc.stop(ctx.currentTime + 0.08);
+    } catch(e) { console.log("صوت غير مدعوم"); }
 }
 
-function playNewOrder() {
+function playNewOrderSound() {
     try {
         let ctx = new (AudioContext || webkitAudioContext)();
         for(let i = 0; i < 2; i++) {
@@ -183,39 +609,41 @@ function playNewOrder() {
                 let gain = ctx.createGain();
                 osc.connect(gain);
                 gain.connect(ctx.destination);
-                osc.frequency.value = 880 - (i * 80);
-                gain.gain.value = 0.25;
+                osc.frequency.value = 880 - (i * 100);
+                gain.gain.value = 0.3;
                 osc.start();
-                gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.15);
-                osc.stop(ctx.currentTime + 0.15);
-            }, i * 100);
+                gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.2);
+                osc.stop(ctx.currentTime + 0.2);
+            }, i * 120);
         }
     } catch(e) {}
 }
 
-function playBell() {
+function playBellSound() {
     try {
         let ctx = new (AudioContext || webkitAudioContext)();
         let osc = ctx.createOscillator();
         let gain = ctx.createGain();
         osc.connect(gain);
         gain.connect(ctx.destination);
-        osc.frequency.value = 1046.5;
-        gain.gain.value = 0.3;
+        osc.frequency.value = 880;
+        gain.gain.value = 0.4;
         osc.start();
-        gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.35);
-        osc.stop(ctx.currentTime + 0.35);
+        gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.3);
+        osc.stop(ctx.currentTime + 0.3);
+        
         setTimeout(() => {
             let osc2 = ctx.createOscillator();
             let gain2 = ctx.createGain();
             osc2.connect(gain2);
             gain2.connect(ctx.destination);
-            osc2.frequency.value = 1318.51;
-            gain2.gain.value = 0.25;
+            osc2.frequency.value = 660;
+            gain2.gain.value = 0.35;
             osc2.start();
             gain2.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.25);
             osc2.stop(ctx.currentTime + 0.25);
         }, 150);
+        
         let bell = document.createElement('div');
         bell.className = 'floating-bell';
         bell.innerHTML = '🔔';
@@ -233,14 +661,14 @@ function showToast(msg) {
 
 // ============= حفظ البيانات =============
 function saveData() {
-    localStorage.setItem('iraqi_orders_full', JSON.stringify(allOrders));
-    localStorage.setItem('iraqi_next_full', nextOrderNumber);
+    localStorage.setItem('banyo_orders', JSON.stringify(allOrders));
+    localStorage.setItem('banyo_next', nextOrderNumber);
 }
 
 function loadData() {
-    let saved = localStorage.getItem('iraqi_orders_full');
+    let saved = localStorage.getItem('banyo_orders');
     if(saved) allOrders = JSON.parse(saved);
-    saved = localStorage.getItem('iraqi_next_full');
+    saved = localStorage.getItem('banyo_next');
     if(saved) nextOrderNumber = parseInt(saved);
 }
 
@@ -248,10 +676,12 @@ function loadData() {
 function initAbly() {
     try {
         ably = new Ably.Realtime({ key: ABLY_API_KEY });
-        channel = ably.channels.get("restaurant-orders");
+        channel = ably.channels.get("banyo-restaurant");
+        
         ably.connection.on("connected", () => {
             document.querySelectorAll('.connection-status').forEach(el => el.style.background = '#2ecc71');
         });
+        
         ably.connection.on("failed", () => {
             document.querySelectorAll('.connection-status').forEach(el => el.style.background = '#e74c3c');
         });
@@ -262,7 +692,7 @@ function initAbly() {
                 allOrders.unshift(order);
                 saveData();
                 refreshKitchen();
-                playNewOrder();
+                playNewOrderSound();
                 showToast(`🔔 طلب جديد #${order.orderNumber} - طاولة ${order.tableNumber}`);
             }
         });
@@ -288,8 +718,8 @@ function initAbly() {
                     time: data.time
                 });
                 updateCashierReady();
-                playBell();
-                showToast(`🔔 طلب #${data.orderNumber} - طاولة ${data.tableNumber} جاهز!`);
+                playBellSound();
+                showToast(`🔔🔔 طلب #${data.orderNumber} - طاولة ${data.tableNumber} جاهز!`);
             }
         });
         
@@ -306,7 +736,9 @@ function initAbly() {
                 showToast(`✅ تم تسليم الطلب #${data.orderNumber}`);
             }
         });
-    } catch(e) { console.log(e); }
+    } catch(e) {
+        console.log("Ably error:", e);
+    }
 }
 
 // ============= الكاشير =============
@@ -354,7 +786,7 @@ function updateCart() {
     let container = document.getElementById('cashierCart');
     if(!container) return;
     if(currentCart.length === 0) {
-        container.innerHTML = '<div class="empty-state">السلة فاضية</div>';
+        container.innerHTML = '<div class="empty-state">🛒 السلة فاضية</div>';
         updateSummary();
         return;
     }
@@ -362,12 +794,12 @@ function updateCart() {
         <div class="cart-item">
             <div style="font-size:1.2rem">${item.emoji}</div>
             <div style="flex:1">
-                <div style="color:#ffd4e5">${item.name}</div>
-                <div style="color:#ff6b9d;font-size:0.7rem">${formatNumber(item.price)}</div>
+                <div style="color:#ffd4e5;font-size:0.8rem">${item.name}</div>
+                <div style="color:#ff6b9d;font-size:0.65rem">${formatNumber(item.price)}</div>
             </div>
-            <div style="display:flex;gap:6px;align-items:center">
+            <div style="display:flex;gap:5px;align-items:center">
                 <button class="qty-btn" onclick="updateQty(${idx}, -1)">-</button>
-                <span style="color:white;min-width:25px;text-align:center">${item.quantity}</span>
+                <span style="color:white;min-width:22px;text-align:center;font-size:0.8rem">${item.quantity}</span>
                 <button class="qty-btn" onclick="updateQty(${idx}, 1)">+</button>
             </div>
         </div>
@@ -444,10 +876,10 @@ function updateCashierReady() {
         return;
     }
     container.innerHTML = cashierReadyOrders.map(order => `
-        <div class="ready-order-card-cashier">
+        <div class="ready-card">
             <div class="order-header">
                 <span class="order-number">طلب #${order.orderNumber}</span>
-                <span class="table-number">طاولة ${order.tableNumber}</span>
+                <span class="table-badge">طاولة ${order.tableNumber}</span>
                 <span class="order-time">${order.time}</span>
             </div>
             <div class="order-items">
@@ -459,13 +891,13 @@ function updateCashierReady() {
                 `).join('')}
             </div>
             <div class="order-total">الإجمالي: ${formatNumber(order.total)}</div>
-            <button class="btn-complete" onclick="completeOrder(${order.id}, ${order.orderNumber})">🛎️ تم التسليم</button>
+            <button class="btn-action btn-deliver" onclick="completeOrder(${order.id}, ${order.orderNumber})" style="margin-top:8px">🛎️ تم تسليم الطلب</button>
         </div>
     `).join('');
 }
 
 function completeOrder(id, num) {
-    if(confirm(`تأكيد تسليم الطلب #${num}؟`)) {
+    if(confirm(`تأكيد تسليم الطلب #${num} للزبون؟`)) {
         playClick();
         cashierReadyOrders = cashierReadyOrders.filter(o => o.id !== id);
         updateCashierReady();
@@ -490,7 +922,7 @@ function refreshKitchen() {
             <div class="order-card new-order-card">
                 <div class="order-header">
                     <span class="order-number">طلب #${order.orderNumber}</span>
-                    <span class="table-number">طاولة ${order.tableNumber}</span>
+                    <span class="table-badge">طاولة ${order.tableNumber}</span>
                     <span class="order-time">${order.time}</span>
                 </div>
                 <div class="order-items">
@@ -502,7 +934,7 @@ function refreshKitchen() {
                     `).join('')}
                 </div>
                 <div class="order-total">الإجمالي: ${formatNumber(order.total)}</div>
-                <button class="btn-ready" onclick="markReady(${order.id})">✅ جهز الطلب</button>
+                <button class="btn-action btn-ready" onclick="markReady(${order.id})">✅ جهز الطلب</button>
             </div>
         `).join('');
     }
@@ -514,7 +946,7 @@ function refreshKitchen() {
             <div class="order-card ready-order-card">
                 <div class="order-header">
                     <span class="order-number">طلب #${order.orderNumber}</span>
-                    <span class="table-number">طاولة ${order.tableNumber}</span>
+                    <span class="table-badge">طاولة ${order.tableNumber}</span>
                     <span class="order-time">${order.time}</span>
                 </div>
                 <div class="order-items">
@@ -526,7 +958,7 @@ function refreshKitchen() {
                     `).join('')}
                 </div>
                 <div class="order-total">الإجمالي: ${formatNumber(order.total)}</div>
-                <button class="btn-complete" onclick="completeFromKitchen(${order.id}, ${order.orderNumber}, ${order.tableNumber})">🛎️ سلم الطلب</button>
+                <button class="btn-action btn-deliver" onclick="deliverOrder(${order.id}, ${order.orderNumber}, ${order.tableNumber})">🛎️ سلم الطلب للكاشير</button>
             </div>
         `).join('');
     }
@@ -552,7 +984,7 @@ function markReady(id) {
     }
 }
 
-function completeFromKitchen(id, num, table) {
+function deliverOrder(id, num, table) {
     if(confirm(`تأكيد تسليم الطلب #${num} لطاولة ${table}؟`)) {
         allOrders = allOrders.filter(o => o.id !== id);
         saveData();
